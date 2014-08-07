@@ -39,6 +39,37 @@ example_status_code_t example_term() {
 	return EXAMPLE_NO_ERROR;
 }
 
+uint32_t opentest() {
+	LOGI("fortest opentest %s %d", __FILE__, __LINE__);	
+	if (!inited) {
+		LOGI("opentest %s %d need inited", __FILE__, __LINE__);	
+	}
+	return example->opentest();
+}
+
+uint32_t closetest() {
+	LOGI("fortest closetest %s %d", __FILE__, __LINE__);	
+	if (!inited) {
+		LOGI("closetest %s %d need inited", __FILE__, __LINE__);	
+	}
+	return example->closetest();
+}
+
+uint32_t save2file(uint8_t *buf, uint32_t len, uint32_t *wLen) {
+	LOGI("fortest save2file %s %d", __FILE__, __LINE__);	
+	if (!inited) {
+		LOGI("save2file %s %d need inited", __FILE__, __LINE__);	
+	}
+	return example->save2file(buf, len, wLen);
+}
+uint32_t getfromfile(uint8_t *buf, uint32_t len, uint32_t *rLen) {
+	LOGI("fortest getfromfile %s %d", __FILE__, __LINE__);	
+	if (!inited) {
+		LOGI("getfromfile %s %d need inited", __FILE__, __LINE__);	
+	}
+	return example->getfromfile(buf, len, rLen);
+}
+
 uint32_t add100(uint32_t num) {
 	LOGI("fortest add100 %s %d", __FILE__, __LINE__);	
 	if (!inited) {

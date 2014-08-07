@@ -1,0 +1,6 @@
+ndk-build \
+    NDK_PROJECT_PATH=`pwd` \
+    APP_ABI=armeabi-v7a \
+    APP_PLATFORM=android-14 \
+    APP_BUILD_SCRIPT=`pwd`/testbuild.mk \
+    $@

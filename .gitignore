@@ -1,2 +1,7 @@
 *.out
 *.swp
+pro/
+libs/
+obj/
+android/
+*~

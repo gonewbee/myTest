@@ -6,7 +6,7 @@
 
 using namespace android;
 namespace zsy{
-	#define ZSY_EXAMPLE_DESCRIPTOR "zsy_test_example"
+	#define ZSY_EXAMPLE_DESCRIPTOR "zsy.test.example"
 	class IExample: public IInterface
 	{
 		public:

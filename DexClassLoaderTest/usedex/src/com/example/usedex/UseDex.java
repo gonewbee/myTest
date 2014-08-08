@@ -1,6 +1,9 @@
 package com.example.usedex;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import com.dex.test.IDextest;
 
@@ -79,17 +82,39 @@ public class UseDex extends Activity {
 			super.onActivityCreated(savedInstanceState);
 			btn_dex = (Button)findViewById(R.id.btn_dex);
 			btn_dex.setOnClickListener(this);
-			String dexPath = Environment.getExternalStorageDirectory().toString() + File.separator + "test.jar";
+			InputStream in = getResources().openRawResource(R.drawable.test);
+			FileOutputStream out;
+			try {
+				out = openFileOutput("test.jar", MODE_PRIVATE);
+				byte[] buf = new byte[1024];
+				int len = 0;
+				while ((len=in.read(buf))>0) {
+					out.write(buf, 0, len);
+				}
+				in.close();
+				out.close();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			String dexPath = getFilesDir().toString() + File.separator + "test.jar";
+//			String dexPath = Environment.getExternalStorageDirectory().toString() + File.separator + "test.jar";
 //			String dexOutputDirs = Environment.getExternalStorageDirectory().toString();
-			String dexOutputDirs = getFilesDir().toString();
+//			String dexOutputDirs = getFilesDir().toString();
+			String dexOutputDirs = getDir("dex", 0).getAbsolutePath();
 			System.out.println("dexPath: " + dexPath);
+			System.out.println("outputDir: " + dexOutputDirs);
 			DexClassLoader cl = new DexClassLoader(dexPath,dexOutputDirs,null,getClassLoader());
+			//使用DexClassLoader接口dex文件会保存在系统中，用完后删除dex文件，下次在用重新加载
+			new File(dexPath).delete();
+			new File(dexOutputDirs+"/test.dex").delete();
 			Class libProviderClazz = null;
 			try {
 				libProviderClazz = cl.loadClass("com.dex.test.Dextest");
 				lib  = (IDextest)libProviderClazz.newInstance();
 			} catch (Exception e) {
 				e.printStackTrace();
+				btn_dex.setClickable(false);
 			}
 		}
 

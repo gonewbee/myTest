@@ -5,5 +5,5 @@ libs/
 obj/
 android/
 *~
-.jar
+*.jar
 bin/

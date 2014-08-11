@@ -7,3 +7,4 @@ android/
 *~
 *.jar
 bin/
+*.class

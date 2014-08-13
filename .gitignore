@@ -9,3 +9,4 @@ android/
 bin/
 *.class
 rpng
+*.pyc

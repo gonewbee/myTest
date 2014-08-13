@@ -5,31 +5,42 @@
 #include <cv.h>
 #include <highgui.h>
 
+#ifdef _FPYTHON
+#ifdef __cplusplus
+extern "C"{
+#endif
+#endif
 using namespace cv;
 
-int savejar2png(const char* ijar, const char* iImageName);
-int getfrompng(const char* ifile);
+#ifdef _DEBUG_
+int savejar2png(const char* ijar, const char* iImageName, const char *outputPng);
+int getfrompng(const char* ifile, const char* outputFile);
 
 int main(int argc, char **argv) {
-    savejar2png("test.jar", "test.png");
-    getfrompng("cvout.png");
+    savejar2png("test.jar", "test.png", "cvout.png");
+    getfrompng("cvout.png", "frompng.jar");
     return 0;
 }
+#endif
 
 /**
-* 将ijar中的数据隐写到png的第四通道，前四像素点保存的是ijar文
-* 件的长度
-*/
-int savejar2png(const char* ijar, const char* iImageName) {
+ * 将ijar中的数据隐写到png的第四通道，前四像素点保存的是ijar文
+ * 件的长度
+ * @param ijar in要隐藏的文件
+ * @param iImageName in隐藏文件的载体
+ * @param outputPng out输出结果
+ * @return 0 成功 -1失败
+ */
+int savejar2png(const char* ijar, const char* iImageName, const char *outputPng) {
     int rows, cols;
     Mat img = imread(iImageName, CV_LOAD_IMAGE_UNCHANGED);
-    Mat imgOut = img.clone();
 //    Mat img = imread(iImageName);//使用默认参数，读取png图像通道数为3,无透明通道
     if (!img.data) {
         printf("No image data\n");
         return -1;
     }
-    FILE *fin = fopen("test.jar", "r+");
+    Mat imgOut = img.clone();
+    FILE *fin = fopen(ijar, "r+");
     uchar udata = 0;
     int ret = 0;
     rows = img.rows;
@@ -66,14 +77,18 @@ int savejar2png(const char* ijar, const char* iImageName) {
         }
     }
 #endif
-    imwrite("cvout.png", imgOut);
+    imwrite(outputPng, imgOut);
     fclose(fin);
+    return 0;
 }
 
 /**
  * 将png图片的第四通道的数据取出，前四个像素点保存的是文件长度
+ * @param iFile in包含目标文件的图像
+ * @param outputFile out输出结果
+ * @return 0 成功 -1失败
  */
-int getfrompng(const char* iFile) {
+int getfrompng(const char* iFile, const char *outputFile) {
     int rows, cols;
     Mat img = imread(iFile, CV_LOAD_IMAGE_UNCHANGED);
     if (!img.data) {
@@ -89,7 +104,7 @@ int getfrompng(const char* iFile) {
         printf("fileLen too large\n");
         return -1;
     }
-    FILE *fout = fopen("frompng.jar", "w+");
+    FILE *fout = fopen(outputFile, "w+");
     int index=0;
     for (index=0; index<fileLen; index++) {
         fwrite(&data[4*index+19], 1, 1, fout);  //跳过前四个像素点
@@ -98,4 +113,9 @@ int getfrompng(const char* iFile) {
     return 0;
 }
 
+#ifdef _FPYTHON
+#ifdef __cplusplus
+}
+#endif
+#endif
 

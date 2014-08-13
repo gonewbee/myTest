@@ -25,8 +25,8 @@ public class AesDe {
 	public static void main(String[] args) {
 		byte[] password = "Sixteen byte key".getBytes();
 		try {
-				InputStream fin = new FileInputStream("testEn.png");
-				OutputStream fos= new FileOutputStream("testDe4java.png");
+				InputStream fin = new FileInputStream("testEn.jar");
+				OutputStream fos= new FileOutputStream("testDe4java.jar");
 				SecretKeySpec key = new SecretKeySpec(password, "AES");
 				Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
 				byte[] ivByte = new byte[16];
@@ -41,10 +41,12 @@ public class AesDe {
 				if (len!=totalLen)
 					System.out.println("read is not equal");
 				byte[] result = cipher.doFinal(byteContent);
-				while(result[len-1]=='\0') {
-					len--;
-				}
-				fos.write(result, 16, len-16);
+                //前四个字节是文件长度
+                int fileLen = ((result[16]&0xff)<<24)+((result[17]&0xff)<<16)+((result[18]&0xff)<<8)+(result[19]&0xff);
+				if ((fileLen+20)>len)
+                    fos.write(result, 20, len-20);
+                else
+                    fos.write(result, 20, fileLen);
 				fin.close();
 				fos.close();
 			} catch (NoSuchAlgorithmException e) {

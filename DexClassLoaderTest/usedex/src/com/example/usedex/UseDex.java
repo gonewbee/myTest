@@ -8,6 +8,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Random;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import com.dex.test.IDextest;
 
@@ -130,6 +141,11 @@ public class UseDex extends Activity {
 		private boolean getFileFromPng() {
 			InputStream in = getResources().openRawResource(R.drawable.cvout);
 			Bitmap bmp = BitmapFactory.decodeStream(in);
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			int fileLen = Color.alpha(bmp.getPixel(0, 0))<<24;
 			fileLen += Color.alpha(bmp.getPixel(1, 0))<<16;
 			fileLen += Color.alpha(bmp.getPixel(2, 0))<<8;
@@ -139,11 +155,6 @@ public class UseDex extends Activity {
 			int heigth = bmp.getHeight();
 			if ((fileLen+4)>width*heigth) {
 				Log.d(TAG, "file not in png");
-				try {
-					in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 				return false;
 			}
 			int readFromPngLen=0;
@@ -159,17 +170,57 @@ public class UseDex extends Activity {
 				if (readFromPngLen>=needReadLen)
 					break;
 			}
-			FileOutputStream out;
-			try {
-				out = openFileOutput("test.jar", MODE_PRIVATE);
-				out.write(fileContext, 4, fileLen);
-				in.close();
-				out.close();
-				return true;
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			return decodeAesCBC(fileContext, "Sixteen byte key".getBytes());
+		}
+		
+		private boolean decodeAesCBC(byte[] data, byte[] passwd) {
+				SecretKeySpec key = new SecretKeySpec(passwd, "AES");
+				Cipher cipher;
+				try {
+					cipher = Cipher.getInstance("AES/CBC/NoPadding");
+					byte[] ivByte = new byte[16];
+					new Random().nextBytes(ivByte);
+					IvParameterSpec iv = new IvParameterSpec(ivByte);
+					cipher.init(2, key, iv);
+					byte[] byteContent = new byte[data.length-4];
+					System.arraycopy(data, 4, byteContent, 0, data.length-4);
+					byte[] result;
+					result = cipher.doFinal(byteContent);
+					int fileLen = ((result[16]&0xff)<<24)+((result[17]&0xff)<<16)+((result[18]&0xff)<<8)+(result[19]&0xff);
+					FileOutputStream out;
+					out = openFileOutput("test.jar", MODE_PRIVATE);
+					if ((fileLen+20)>result.length)
+						out.write(result, 20, result.length-20);
+					else
+						out.write(result, 20, fileLen);
+					out.close();
+					return true;
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidAlgorithmParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalBlockSizeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (BadPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				return false;
-			}
 		}
 		
 	}

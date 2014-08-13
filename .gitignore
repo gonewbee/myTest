@@ -8,3 +8,4 @@ android/
 *.jar
 bin/
 *.class
+rpng

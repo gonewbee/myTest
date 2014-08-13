@@ -1,8 +1,12 @@
+/**
+ * 利用png无损压缩的特性，将jar文件隐写到png的alpha通道。再将dex文件通过DexClassLoader加载
+ */
 package com.example.usedex;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.dex.test.IDextest;
@@ -12,8 +16,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +34,8 @@ import android.os.Build;
 
 @SuppressLint("ValidFragment")
 public class UseDex extends Activity {
+
+	public static final String TAG = "UseDex";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +71,8 @@ public class UseDex extends Activity {
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
+	@SuppressLint("ValidFragment")
 	public class PlaceholderFragment extends Fragment implements OnClickListener{
-
 		public Button btn_dex;
 		private IDextest lib = null;
 		
@@ -82,21 +92,7 @@ public class UseDex extends Activity {
 			super.onActivityCreated(savedInstanceState);
 			btn_dex = (Button)findViewById(R.id.btn_dex);
 			btn_dex.setOnClickListener(this);
-			InputStream in = getResources().openRawResource(R.drawable.test);
-			FileOutputStream out;
-			try {
-				out = openFileOutput("test.jar", MODE_PRIVATE);
-				byte[] buf = new byte[1024];
-				int len = 0;
-				while ((len=in.read(buf))>0) {
-					out.write(buf, 0, len);
-				}
-				in.close();
-				out.close();
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			getFileFromPng();
 			String dexPath = getFilesDir().toString() + File.separator + "test.jar";
 //			String dexPath = Environment.getExternalStorageDirectory().toString() + File.separator + "test.jar";
 //			String dexOutputDirs = Environment.getExternalStorageDirectory().toString();
@@ -124,6 +120,55 @@ public class UseDex extends Activity {
 			case R.id.btn_dex:
 				Toast.makeText(getApplicationContext(), lib.getDexString(), Toast.LENGTH_SHORT).show();
 				break;
+			}
+		}
+		
+		/**
+		 * 从png的alpha通道中取出文件，前四个字节是文件长度
+		 * @return
+		 */
+		private boolean getFileFromPng() {
+			InputStream in = getResources().openRawResource(R.drawable.cvout);
+			Bitmap bmp = BitmapFactory.decodeStream(in);
+			int fileLen = Color.alpha(bmp.getPixel(0, 0))<<24;
+			fileLen += Color.alpha(bmp.getPixel(1, 0))<<16;
+			fileLen += Color.alpha(bmp.getPixel(2, 0))<<8;
+			fileLen += Color.alpha(bmp.getPixel(3, 0));
+			System.out.println("fileLen: " + fileLen);
+			int width = bmp.getWidth();
+			int heigth = bmp.getHeight();
+			if ((fileLen+4)>width*heigth) {
+				Log.d(TAG, "file not in png");
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return false;
+			}
+			int readFromPngLen=0;
+			int i=0,j=0;
+			int needReadLen = fileLen+4;
+			byte[] fileContext = new byte[needReadLen];
+			for (j=0; j<heigth; j++) {
+				for (i=0; i<width; i++) {
+					fileContext[readFromPngLen++] = (byte) Color.alpha(bmp.getPixel(i, j));
+					if (readFromPngLen>=needReadLen)
+						break;
+				}
+				if (readFromPngLen>=needReadLen)
+					break;
+			}
+			FileOutputStream out;
+			try {
+				out = openFileOutput("test.jar", MODE_PRIVATE);
+				out.write(fileContext, 4, fileLen);
+				in.close();
+				out.close();
+				return true;
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				return false;
 			}
 		}
 		

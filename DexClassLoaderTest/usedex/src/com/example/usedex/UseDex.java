@@ -21,6 +21,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.dex.test.IDextest;
+import com.example.jni.Getso;
 
 import dalvik.system.DexClassLoader;
 import android.annotation.SuppressLint;
@@ -123,6 +124,7 @@ public class UseDex extends Activity {
 				e.printStackTrace();
 				btn_dex.setClickable(false);
 			}
+			testBuf();
 		}
 
 		@Override
@@ -221,6 +223,16 @@ public class UseDex extends Activity {
 					e.printStackTrace();
 				}
 				return false;
+		}
+		
+		private void testBuf() {
+			Getso getso = new Getso();
+			Log.d(TAG, getso.getVersion());
+			byte[] in = {0x1, 0x2, 0x3, 0x4};
+			byte[] key = {0x10, 0x20, 0x30, 0x40};
+			byte[] out = new byte[in.length];
+			getso.getBuf(in, out, key);
+			System.out.printf("ret:%x %x %x %x\n", out[0], out[1], out[2], out[3]);
 		}
 		
 	}

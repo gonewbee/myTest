@@ -1,5 +1,7 @@
 /**
  * 快速排序
+ * http://blog.csdn.net/morewindows/article/details/6684558
+ * http://zh.wikipedia.org/wiki/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F
  */
 #include <stdio.h>
 #include <time.h>
@@ -15,22 +17,54 @@ void print_buffer(int *list, int len) {
     printf("\n");
 }
 
-void quick_sort(int *list, int start, int end) {
+/**
+ * wiki上代码
+ */
+void quick_sort (int data[], size_t left, size_t right) {
+	size_t p = (left + right) / 2;  //取中间的数作为比较值
+	int pivot = data[p];
+	size_t i = left,j = right;
+	for ( ; i < j;) {
+		while (! (i>= p || pivot < data[i]))
+			++i;
+		if (i < p) {
+			data[p] = data[i];
+			p = i;
+		}
+		while (! (j <= p || data[j] < pivot))
+			--j;
+		if (j > p) {
+			data[p] = data[j];
+			p = j;
+		}
+	}
+	data[p] = pivot;
+	if (p - left > 1)
+		quick_sort(data, left, p - 1);
+	if (right - p > 1)
+		quick_sort(data, p + 1, right);
+}
+
+void quick_sort_2(int *list, int start, int end) {
     int X = list[end];  //取最后一个元素做比较值
     int tmp;
     int midIndex=start, index=start;
     if (start>=end)
         return;
-    while (index<=end) {
-        if (list[index]<=X) {
-            tmp = list[midIndex];
-            list[midIndex] = list[index];
-            list[index] = tmp;
+    while (index<end) {
+        if (list[index]<X) {
+            if (index!=midIndex) {
+                tmp = list[midIndex];
+                list[midIndex] = list[index];
+                list[index] = tmp;
+            }
             midIndex++;
         }
         index++;
     }
-    midIndex--;
+    tmp = list[midIndex];
+    list[midIndex] = list[end];
+    list[end] = tmp;
     quick_sort(list, start, midIndex-1);
     quick_sort(list, midIndex+1, end);
 }

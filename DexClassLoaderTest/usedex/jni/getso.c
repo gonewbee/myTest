@@ -16,10 +16,9 @@ JNIEXPORT jstring JNICALL Java_com_example_jni_Getso_getVersion
 
 
 JNIEXPORT jboolean JNICALL Java_com_example_jni_Getso_getBuf
-  (JNIEnv *env, jobject thiz, jbyteArray bIn, jbyteArray bOut, jbyteArray bKey) {
+  (JNIEnv *env, jobject thiz, jbyteArray bIn, jbyteArray bOut, jbyteArray bKey, jint len) {
     jbyte *in = (*env)->GetByteArrayElements(env, bIn, NULL);
     jbyte *key = (*env)->GetByteArrayElements(env, bKey, NULL);
-    int len = sizeof(in);
     LOGI("sizeof of input is:%d\n", len);
     uint8_t *ret = (uint8_t *)malloc(len);
     int i = 0;

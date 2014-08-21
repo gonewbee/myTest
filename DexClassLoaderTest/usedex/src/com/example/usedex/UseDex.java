@@ -28,6 +28,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -86,7 +87,10 @@ public class UseDex extends Activity {
 	@SuppressLint("ValidFragment")
 	public class PlaceholderFragment extends Fragment implements OnClickListener{
 		public Button btn_dex;
+		public Button btn_so;
 		private IDextest lib = null;
+		private Getso getso = null;
+		private int onClickTimes = 0;
 		
 		public PlaceholderFragment() {
 		}
@@ -103,7 +107,9 @@ public class UseDex extends Activity {
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
 			btn_dex = (Button)findViewById(R.id.btn_dex);
+			btn_so = (Button)findViewById(R.id.btn_so);
 			btn_dex.setOnClickListener(this);
+			btn_so.setOnClickListener(this);
 			getFileFromPng();
 			String dexPath = getFilesDir().toString() + File.separator + "test.jar";
 //			String dexPath = Environment.getExternalStorageDirectory().toString() + File.separator + "test.jar";
@@ -124,6 +130,7 @@ public class UseDex extends Activity {
 				e.printStackTrace();
 				btn_dex.setClickable(false);
 			}
+			getso = Getso.getInstance(getApplicationContext());
 			testBuf();
 		}
 
@@ -132,6 +139,10 @@ public class UseDex extends Activity {
 			switch(v.getId()) {
 			case R.id.btn_dex:
 				Toast.makeText(getApplicationContext(), lib.getDexString(), Toast.LENGTH_SHORT).show();
+				break;
+			case R.id.btn_so:
+				onClickTimes++;
+				testBuf(onClickTimes);
 				break;
 			}
 		}
@@ -226,13 +237,28 @@ public class UseDex extends Activity {
 		}
 		
 		private void testBuf() {
-			Getso getso = new Getso();
 			Log.d(TAG, getso.getVersion());
 			byte[] in = {0x1, 0x2, 0x3, 0x4};
 			byte[] key = {0x10, 0x20, 0x30, 0x40};
 			byte[] out = new byte[in.length];
-			getso.getBuf(in, out, key);
+			getso.getBuf(in, out, key, 4);
 			System.out.printf("ret:%x %x %x %x\n", out[0], out[1], out[2], out[3]);
+		}
+		
+		private void testBuf(int len) {
+			byte[] in = new byte[len];
+			byte[] key = new byte[len];
+			byte[] out = new byte[len];
+			int i = 0;
+			for (i=0; i<len; i++) {
+				in[i] = (byte)i;
+				key[i] = (byte)(i*16);
+			}
+			System.out.println("test buf len: " + len);
+			getso.getBuf(in, out, key, len);
+			for (i=0; i<len; i++)
+				System.out.printf("%x ", out[i]);
+			System.out.println();
 		}
 		
 	}

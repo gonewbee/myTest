@@ -18,4 +18,12 @@
         android:layout_marginTop="24dp"
         android:text="showDex" />
 
+    <Button
+        android:id="@+id/btn_so"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btn_dex"
+        android:layout_below="@+id/btn_dex"
+        android:text="testso" />
+
 </RelativeLayout>

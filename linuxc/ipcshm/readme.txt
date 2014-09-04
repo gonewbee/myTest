@@ -1,3 +1,8 @@
+./save2shm.out 创建共享内存，将输入的数保存入共享内存中，输入quit退出
+./useshm.out 从共享内存中读数，并打印出来
+通过信号量进行同步
+
+
 1. 取得ipc信息：
     ipcs [-m|-q|-s]
     -m      输出有关共享内存(shared memory)的信息

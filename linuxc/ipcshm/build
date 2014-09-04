@@ -1,0 +1,2 @@
+gcc -o save2shm.out save2shm.c
+gcc -o useshm.out useshm.c

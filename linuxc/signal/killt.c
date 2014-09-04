@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
     fgets(str, 15, stdin);
     pid = atoi(str);
     printf("send SIGTERM to %u\n", pid);
+    /* 向指定pid发送SIGTERM */
     kill(pid, SIGTERM);
     return 0;
 }

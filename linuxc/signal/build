@@ -1,0 +1,3 @@
+#gcc -o signalt.out signalt.c -lpthread
+gcc -o signalt.out signalt.c
+gcc -o killt.out killt.c

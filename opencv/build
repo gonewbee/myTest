@@ -1,4 +1,4 @@
 #编译执行文件
-g++ -D_DEBUG_ `pkg-config --cflags opencv` -o rpng rpng.cpp `pkg-config --libs opencv`
+g++ -g -D_DEBUG_ `pkg-config --cflags opencv` -o rpng rpng.cpp `pkg-config --libs opencv`
 #编译动态库，python使用ctypes方法调用
 g++ -fPIC -shared -D_FPYTHON `pkg-config --cflags opencv` -o librpng.so rpng.cpp `pkg-config --libs opencv`

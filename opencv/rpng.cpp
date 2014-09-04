@@ -1,5 +1,5 @@
 /**
- * 将文件隐写到png图像的第四通道，前四个像素点为文件长度
+ * 将数据分别存储到png四个通道,四位顺序为BGRA，前四个像素点为文件长度
  * 1. 读取png图像imread时使用CV_LOAD_IMAGE_UNCHANGED参数，通道数为4
  */
 #include <cv.h>
@@ -22,6 +22,35 @@ int main(int argc, char **argv) {
     return 0;
 }
 #endif
+
+/** 将数据分别存储到ABGR的低两位  */
+void saveData2Pixel(uchar *data, int *index, uchar udata) {
+    int tmp = *index;
+    data[tmp] = (data[tmp]&0xfc) | ((udata&0xc0)>>6);
+    tmp++;
+    data[tmp] = (data[tmp]&0xfc) | ((udata&0x30)>>4);
+    tmp++;
+    data[tmp] = (data[tmp]&0xfc) | ((udata&0x0c)>>2);
+    tmp++;
+    data[tmp] = (data[tmp]&0xfc) | (udata&0x03);
+    tmp++;
+    *index = tmp;
+}
+
+uchar getDataFromPixel(uchar *data, int *index) {
+    uchar udata = 0;
+    int tmp = *index;
+    udata = ((data[tmp++]&0x03)<<6)|((data[tmp++]&0x03)<<4)|((data[tmp++]&0x03)<<2)|(data[tmp++]&0x03);
+    *index = tmp;
+    return udata;
+}
+
+void logHex(uchar *buf, int len) {
+    int i = 0;
+    for (i=0; i<len; i++) 
+        printf("%x ", buf[i]);
+    printf("\n");
+}
 
 /**
  * 将ijar中的数据隐写到png的第四通道，前四像素点保存的是ijar文
@@ -48,9 +77,11 @@ int savejar2png(const char* ijar, const char* iImageName, const char *outputPng)
     printf("channels:%d, rows:%d, cols:%d\n", img.channels(), rows, cols);
     //imshow("png", img); //显示时仍然未显示出透明通道
 #if 1
-    int fileLen=0, index=4;
+    int fileLen=0;
     int pngLen = img.rows*img.cols;
+    pngLen*=4;
     uchar *data = imgOut.ptr<uchar>(0);
+    int index = 16; //数据位索引，每个像素点四byte
     while ((ret=fread(&udata, 1, 1, fin))==1) {
         fileLen++;
         if (index>pngLen) {
@@ -58,14 +89,16 @@ int savejar2png(const char* ijar, const char* iImageName, const char *outputPng)
             fclose(fin);
             return -1;
         }
-        data[index*4+3] = udata;
-        index++;
+        saveData2Pixel(data, &index, udata);
     }
     printf("fileLen:%d\n", fileLen);
-    data[3] = (fileLen>>24)&0xff;
-    data[7] = (fileLen>>16)&0xff;
-    data[11] = (fileLen>>8)&0xff;
-    data[15] = fileLen&0xff;
+    /** 将长度保存到前四个像素点 */
+    index = 0;
+    saveData2Pixel(data, &index, (fileLen>>24)&0xff);
+    saveData2Pixel(data, &index, (fileLen>>16)&0xff);
+    saveData2Pixel(data, &index, (fileLen>>8)&0xff);
+    saveData2Pixel(data, &index, fileLen&0xff);
+    logHex(data, 16);
 #else
     int i=0, j=0;
     for (i=0; i<rows; i++) {
@@ -95,9 +128,14 @@ int getfrompng(const char* iFile, const char *outputFile) {
         printf("No image data\n");
         return -1;
     }
-    Vec4b pngPoint;
     uchar *data = img.ptr<uchar>(0);
-    int fileLen = (data[3]<<24)+(data[7]<<16)+(data[11]<<8)+data[15];
+    int index=0;
+    int fileLen = 0;
+    logHex(data, 16);
+    fileLen += (getDataFromPixel(data, &index)<<24);
+    fileLen += (getDataFromPixel(data, &index)<<16);
+    fileLen += (getDataFromPixel(data, &index)<<8);
+    fileLen += getDataFromPixel(data, &index);
     printf("fileLen:%d\n", fileLen);
     int pngLen = img.rows*img.cols;
     if ((fileLen+4)>pngLen) {
@@ -105,9 +143,12 @@ int getfrompng(const char* iFile, const char *outputFile) {
         return -1;
     }
     FILE *fout = fopen(outputFile, "w+");
-    int index=0;
-    for (index=0; index<fileLen; index++) {
-        fwrite(&data[4*index+19], 1, 1, fout);  //跳过前四个像素点
+    uchar udata = 0;
+    fileLen*=4; //一个像素点有四个字节数据ABGR
+    fileLen+=16;//前四个像素点为长度
+    while (index<fileLen) {
+        udata = getDataFromPixel(data, &index);
+        fwrite(&udata, 1, 1, fout);  
     }
     fclose(fout);
     return 0;

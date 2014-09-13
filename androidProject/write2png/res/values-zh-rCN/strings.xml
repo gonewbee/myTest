@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <string android:layout_width="wrap_content" android:id="@+id/string1" android:layout_height="wrap_content" name="writetopng">文件隐写</string>
+    <string name="app_name">文件隐写器</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">设置</string>
+    <string name="getfrompng">获取隐写文件</string>
+    <string name="browse_to_write">选择要隐写的文件</string>
+    <string name="browse_png">选择要隐写到那个png</string>
+    <string name="write_ok">保存</string>
+    <string name="get_file_title">选择要隐写的文件</string>
+    <string name="select_enpng">选择已隐写的png</string>
+    <string name="toget">读取</string>
+    
+</resources>

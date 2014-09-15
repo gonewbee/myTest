@@ -5,11 +5,14 @@ import java.io.File;
 import com.ksh.pngops.PngHandler;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,10 +28,13 @@ public class Writefile extends Activity implements View.OnClickListener {
 	
 	private String src_file = null;
 	private String png_file = null;
-	
+	private Handler dialogHandler = null;
+	private ProgressDialog dialog = null;
 	private final String SRCFILEKEY = "SRCFILE";
 	private final String PNGFILEKEY = "PNGFILE";
 	private final int STARTWRITE = 1; 
+	private final int SHOWDIALOG = 2;
+	private final int CANCELDIALOG = 3;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,6 +47,23 @@ public class Writefile extends Activity implements View.OnClickListener {
 		btn_browse_file.setOnClickListener(this);
 		btn_browse_png.setOnClickListener(this);
 		btn_ok.setOnClickListener(this);
+		
+		HandlerThread dialogThread = new HandlerThread("dialogThread");
+		dialogThread.start();
+		dialogHandler = new Handler(dialogThread.getLooper()) {
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+				switch (msg.what) {
+				case SHOWDIALOG:
+					dialog = ProgressDialog.show(Writefile.this, "提示", "正在保存文件", true);
+					break;
+				case CANCELDIALOG:
+					if (dialog!=null)
+						dialog.cancel();
+					break;
+				}
+			}
+		};
 	}
 	
 	Handler handler = new Handler() {
@@ -51,7 +74,19 @@ public class Writefile extends Activity implements View.OnClickListener {
 				Bundle data = msg.getData();
 				String srcFile = data.getString(SRCFILEKEY);
 				String pngFile = data.getString(PNGFILEKEY);
-				new PngHandler(PngHandler.SAVE2ALPHALOW).savefile2png(srcFile, pngFile);
+				dialogHandler.removeMessages(SHOWDIALOG);
+				dialogHandler.sendEmptyMessage(SHOWDIALOG);
+				boolean ret = new PngHandler(PngHandler.SAVE2ALPHALOW).savefile2png(srcFile, pngFile);
+				dialogHandler.removeMessages(CANCELDIALOG);
+				dialogHandler.sendEmptyMessage(CANCELDIALOG);
+				String str;
+				if (ret)
+					str = "隐写成功";
+				else
+					str = "隐写失败";
+				Toast toast = Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT);
+				toast.setGravity(Gravity.CENTER, 0, 0);
+				toast.show();
 				break;
 			}
 		}

@@ -11,5 +11,6 @@
     <string name="get_file_title">选择要隐写的文件</string>
     <string name="select_enpng">选择已隐写的png</string>
     <string name="toget">读取</string>
+    <string name="check_update">检查更新</string>
     
 </resources>

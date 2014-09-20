@@ -27,12 +27,13 @@ public final class R {
         public static final int ic_launcher=0x7f020002;
     }
     public static final class id {
-        public static final int action_settings=0x7f08000f;
+        public static final int action_settings=0x7f080011;
         public static final int btn_browse_png=0x7f080008;
         public static final int btn_browsw_file=0x7f080006;
-        public static final int btn_check_update=0x7f080005;
+        public static final int btn_check_update=0x7f080010;
         public static final int btn_get_enpng=0x7f080000;
         public static final int btn_read=0x7f080004;
+        public static final int btn_setting=0x7f080005;
         public static final int btn_toget=0x7f080002;
         public static final int btn_write=0x7f080003;
         public static final int btn_write_ok=0x7f08000a;
@@ -43,6 +44,7 @@ public final class R {
         public static final int txt_enpng=0x7f080001;
         public static final int txt_load_png=0x7f080009;
         public static final int txt_src_file=0x7f080007;
+        public static final int txt_ver_name=0x7f08000f;
     }
     public static final class layout {
         public static final int activity_readfile=0x7f030000;
@@ -50,6 +52,7 @@ public final class R {
         public static final int activity_writefile=0x7f030002;
         public static final int fragment_write2png=0x7f030003;
         public static final int listview=0x7f030004;
+        public static final int setting=0x7f030005;
     }
     public static final class menu {
         public static final int write2png=0x7f070000;
@@ -64,6 +67,7 @@ public final class R {
         public static final int getfrompng=0x7f050004;
         public static final int hello_world=0x7f050001;
         public static final int select_enpng=0x7f050009;
+        public static final int setting=0x7f05000c;
         public static final int toget=0x7f05000a;
         public static final int write_ok=0x7f050007;
         public static final int writetopng=0x7f050003;

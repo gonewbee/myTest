@@ -12,5 +12,6 @@
     <string name="select_enpng">选择已隐写的png</string>
     <string name="toget">读取</string>
     <string name="check_update">检查更新</string>
+    <string name="setting">设置</string>
     
 </resources>

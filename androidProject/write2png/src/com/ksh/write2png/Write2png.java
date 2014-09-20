@@ -19,17 +19,17 @@ public class Write2png extends Activity implements View.OnClickListener {
 
 	private Button btn_write;
 	private Button btn_read;
-	private Button btn_update;
+	private Button btn_setting;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_write2png);
 		btn_write = (Button) findViewById(R.id.btn_write);
 		btn_read = (Button) findViewById(R.id.btn_read);
-		btn_update = (Button) findViewById(R.id.btn_check_update);
+		btn_setting = (Button) findViewById(R.id.btn_setting);
 		btn_write.setOnClickListener(this);
 		btn_read.setOnClickListener(this);
-		btn_update.setOnClickListener(this);
+		btn_setting.setOnClickListener(this);
 	}
 
 	@Override
@@ -64,8 +64,9 @@ public class Write2png extends Activity implements View.OnClickListener {
 			intent.setClass(this, Readfile.class);
 			startActivity(intent);
 			break;
-		case R.id.btn_check_update:
-			new CheckUpdateTask(this).execute();
+		case R.id.btn_setting:
+			intent.setClass(this, Setting.class);
+			startActivity(intent);
 			break;
 		}
 	}

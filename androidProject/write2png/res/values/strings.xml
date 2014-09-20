@@ -13,5 +13,6 @@
     <string name="select_enpng">Select enpng</string>
     <string name="toget">To get</string>
     <string name="check_update">Check update</string>
+    <string name="setting">Setting</string>
 
 </resources>

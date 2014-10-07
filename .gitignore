@@ -10,3 +10,4 @@ bin/
 *.class
 rpng
 *.pyc
+image/libpng/*.png

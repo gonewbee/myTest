@@ -1,0 +1,5 @@
+##代码来源http://cis.stvincent.edu/html/tutorials/swd/btree/btree.html
+##也可参考http://blog.csdn.net/v_JULY_v/article/details/6530142/
+##执行./build编译；./build -DDEBUG编译DEBUG版本
+g++ $1 -o btmake.out btmake.cpp btree.cpp
+g++ $1 -o btread.out btread.cpp btree.cpp

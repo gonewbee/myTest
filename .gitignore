@@ -11,3 +11,4 @@ bin/
 rpng
 *.pyc
 image/libpng/*.png
+*.dat

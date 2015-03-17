@@ -30,6 +30,7 @@ import java.io.File;
 public class ExDialog extends ListActivity {
 	private List<Map<String, Object>> mData;
 	private String mDir = "/mnt";
+	ArrayList<String> get_list;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +40,9 @@ public class ExDialog extends ListActivity {
 		Bundle bl = intent.getExtras();
 		String title = bl.getString("explorer_title");
 		Uri uri = intent.getData();
-		ArrayList<String> list = intent.getStringArrayListExtra("list");
-
+		get_list = intent.getStringArrayListExtra("list");
 		setTitle(title);
-		mData = getDataFromList(list);
+		mData = getDataFromList(get_list);
 		MyAdapter adapter = new MyAdapter(this);
 		setListAdapter(adapter);
 
@@ -109,7 +109,22 @@ public class ExDialog extends ListActivity {
 		Log.d("MyListView4-click", (String) mData.get(position).get("info"));
 		if ((Integer) mData.get(position).get("img") == R.drawable.ex_folder) {
 			mDir = (String) mData.get(position).get("info");
-			mData = getData();
+			boolean isParent = false;
+			Iterator it = get_list.iterator();
+			String line;
+			while (it.hasNext()) {
+				line = (String) it.next();
+				File f = new File(line);
+				if (mDir.equals(f.getParent())) {
+					isParent = true;
+					break;
+				}
+			}
+			if (isParent) {
+				mData = getDataFromList(get_list);
+			} else {
+				mData = getData();
+			}
 			MyAdapter adapter = new MyAdapter(this);
 			setListAdapter(adapter);
 		} else {

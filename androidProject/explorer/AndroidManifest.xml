@@ -23,6 +23,11 @@
             </intent-filter>
         </activity>
         <activity android:name="com.zsy.explorer.ExDialog"></activity>
+        <service android:name=".MyService">
+            <intent-filter >
+                <action android:name="android.intent.action.zsy.myservice"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

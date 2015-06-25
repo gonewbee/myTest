@@ -17,12 +17,13 @@ extern "C" {
 #include <unistd.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include "heartbeat.h"
 
 /**
  * @brief 建立tcp连接
  * @return 大于0成功，其它值失败
  */
-static int tcp_connect(const char *hostname, int port) {
+static int tcp_connect(_p_heartbeat_arg *heartbeat) {
 	int status;
 	int sockfd;
 	char port_str[16];
@@ -36,10 +37,10 @@ static int tcp_connect(const char *hostname, int port) {
 	hints.ai_socktype = SOCK_STREAM;
 	
 	/* 将port由int转化为字符串 */
-	snprintf(port_str, sizeof(port_str)-1, "%u", port);
-	fprintf(stderr, "hostname:%s;port_str:%s\n", hostname, port_str);
+	snprintf(port_str, sizeof(port_str)-1, "%u", heartbeat->port);
+	fprintf(stderr, "hostname:%s;port_str:%s\n", heartbeat->hostname, port_str);
 	
-	status = getaddrinfo(hostname, port_str, &hints, &result);
+	status = getaddrinfo(heartbeat->hostname, port_str, &hints, &result);
 	if (status!=0) {
 		fprintf(stderr, "getaddrinfo error:%s\n", gai_strerror(status));
 		return -1;
@@ -62,6 +63,7 @@ static int tcp_connect(const char *hostname, int port) {
 		freeaddrinfo(result); /* 释放由getaddrinfo接口返回指针 */
 		return -1;
 	}
+	heartbeat->sockfd = sockfd;
 	status = connect(sockfd, addr->ai_addr, addr->ai_addrlen);
 	if (status<0) {
 		fprintf(stderr, "connect error\n");
@@ -71,18 +73,18 @@ static int tcp_connect(const char *hostname, int port) {
 }
 
 void *heartbeat_thread(void *arg) {
-	int alive_num = 0;
 	char str[] = "keep alive";
 	char buf[64] = {0};
-	int sockfd = *((int *)arg);
+	_p_heartbeat_arg *heartbeat = (_p_heartbeat_arg *)arg;
+	int alive_num = heartbeat->num;
 	int len = 0;
-	fprintf(stderr, "in heartbeat_thread sockfd:%d %p\n", sockfd, arg);
+	fprintf(stderr, "in heartbeat_thread sockfd:%d\n", heartbeat->sockfd);
 	while (1) {
-		if (send(sockfd, str, strlen(str), 0)==-1) {
+		if (send(heartbeat->sockfd, str, strlen(str), 0)==-1) {
 			perror("send error");
 			goto fail;
 		}
-		len = recv(sockfd, buf, 64, 0);
+		len = recv(heartbeat->sockfd, buf, 64, 0);
 		if (len==-1) {
 			perror("recv error");
 			goto fail;
@@ -101,31 +103,30 @@ void *heartbeat_thread(void *arg) {
 		sleep(3);
 	}
 fail:
-	close(sockfd);
-	exit(1);
+	close(heartbeat->sockfd);
+	fprintf(stderr, "disconnect is null:%d\n", (heartbeat->disconnect==NULL));
+	heartbeat->disconnect(1);
 }
 
 /**
  * @brief 启动心跳检测
  *
  * 启动一个线程向目的地址发送心跳包
- * @param[in] hostname 目的主机ip地址
- * @param[in] port 目的主机端口
  */
-int start_heartbeat(const char* hostname, int port) {
+int start_heartbeat(_p_heartbeat_arg *heartbeat) {
 	int sockfd = -1;
 	pthread_t pid = 0;
 	int ret = -1;
 	
-	sockfd = tcp_connect(hostname, port);
+	sockfd = tcp_connect(heartbeat);
 	if (sockfd<0) {
 		fprintf(stderr, "tcp connect error\n");
 		return -1;
 	}
 	fprintf(stderr, "tcp_connect sockfd:%d %p\n", sockfd, &sockfd);
 	
-	ret = pthread_create(&pid, NULL, heartbeat_thread, (void *)(&sockfd));
-	sleep(1); /* pthread_create传递参数时，如果start_heartbeat立刻结束的话，&sockfd对应的值已经释放，在heartbeat_thread获取到的arg就不对 */
+	ret = pthread_create(&pid, NULL, heartbeat_thread, (void *)(heartbeat));
+//	sleep(1); /* pthread_create传递参数时，如果start_heartbeat立刻结束的话，&sockfd对应的值已经释放，在heartbeat_thread获取到的arg就不对 */
 	if (ret!=0) {
 		fprintf(stderr, "pthread_create error\n");
 		return -1;
@@ -133,9 +134,38 @@ int start_heartbeat(const char* hostname, int port) {
 	return 1;
 }
 
+/**
+ * @brief 申请一个heartbeat
+ */
+_p_heartbeat_arg *new_heartbeat() {
+	/* malloc时应该使用sizeof(_p_heartbeat_arg)，不应该使用sizeof(_p_heartbeat_arg *) */
+	_p_heartbeat_arg *heartbeat = (_p_heartbeat_arg *)malloc(sizeof(_p_heartbeat_arg));
+	memset(heartbeat, 0, sizeof(_p_heartbeat_arg));
+	heartbeat->sockfd = -1;
+	heartbeat->interval = 3;
+	heartbeat->num = 3;
+	return heartbeat;
+}
+
+void free_heartbeat(_p_heartbeat_arg *heartbeat) {
+	free(heartbeat);
+}
+
 #ifdef _DEBUG_TEST_
+
+int my_disconnect(int code) {
+	printf("test\n");
+	fprintf(stderr, "disconnect!!!!!!!!!!!\n");
+	exit(0);
+}
+
 int main(int argc, char **argv) {
-	start_heartbeat("192.168.7.169", 12138);
+	char hostname[] = "192.168.7.140";
+	_p_heartbeat_arg *heartbeat = new_heartbeat();
+	memcpy(heartbeat->hostname, hostname, strlen(hostname));
+	heartbeat->port = 12138;
+	heartbeat->disconnect = my_disconnect;
+	start_heartbeat(heartbeat);
 	fprintf(stderr, "wait input!");
 	getchar();
 }

@@ -12,3 +12,4 @@ rpng
 *.pyc
 image/libpng/*.png
 *.dat
+Xlib_JPEG_Example

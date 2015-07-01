@@ -220,9 +220,11 @@ int main(int argc, char *argv[]) {
 #else
             /* 在窗口区域内按住鼠标左键进行拖动 */
             XUngrabPointer(cxt->display, CurrentTime); //必须要有这句，没有这句不会产生拖动的效果。
-            x = event.xbutton.x;
-            y = event.xbutton.y;
-            fprintf(stdout, "x:%d;y:%d\n", x, y);
+            Window child_window;
+            XTranslateCoordinates(cxt->display, window, 
+                    RootWindowOfScreen(cxt->screen), event.xbutton.x, event.xbutton.y,
+                    &x, &y, &child_window); /**< 加上这句解决鼠标拖动窗体时鼠标位置不对的问题 */
+            fprintf(stdout, "x:%d;y:%d;%d;%d\n", x, y, event.xbutton.x, event.xbutton.y);
             sendClientEvent(cxt, window, cxt->_NET_WM_MOVERESIZE, 5, x, y, 8, 1, 1);
 #endif
             break;

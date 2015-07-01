@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/keysym.h>
 
 #define MWM_DECOR_ALL           (1L << 0)
 #define MWM_FUNC_ALL            (1L << 0)
@@ -129,9 +130,20 @@ void setWindowDecorations(testContext *cxt, Window window, int show)
 }
 
 /**
+ * 设置override redirect后窗口一直显示在屏幕上，不会被覆盖，
+ * 并且不受窗口管理器控制，任务栏中没有图标
+ */
+void setWindowOverrideRedirect(testContext *cxt, Window window) {
+    XSetWindowAttributes attrs;
+    attrs.override_redirect = True;
+    XChangeWindowAttributes(cxt->display, window, CWOverrideRedirect, &attrs);
+}
+
+/**
  * @breif 模拟发送事件
  *
- * 发送这个后就可以按住鼠标拖动窗体
+ * @param atom  _NET_WM_MOVERESIZE 发送这个后就可以按住鼠标拖动窗体
+ *              _NET_WM_STATE 窗口状态，如最大化
  */
 void sendClientEvent(testContext *cxt, Window window, Atom atom, unsigned int numArgs, ...) {
     XEvent xevent;
@@ -178,7 +190,8 @@ Window create_window(testContext *cxt) {
 						InputOutput, DefaultVisual(cxt->display, 0),
 						0, &cxt->winAttrib);
 	setWindowDecorations(cxt, window, 0);	//设置后没有Ubuntu自带的关闭、最小和最大这三个键
-    xf_SetWindowUnlisted(cxt, window);      //设置后任务栏中没有图表
+    setWindowOverrideRedirect(cxt, window); //设置override redirect，设置后不受窗口管理器控制也没有任务栏图标
+//    xf_SetWindowUnlisted(cxt, window);      //设置后任务栏中没有图表
 	return window;
 }
 
@@ -204,6 +217,7 @@ int main(int argc, char *argv[]) {
 	XFlush(cxt->display);
     int x=0, y=0;
     int width=200, height=300;
+    KeySym keysym;
 	while (1) {
 		XNextEvent(cxt->display, &event); //获取事件
 		if (event.type!=MotionNotify)
@@ -228,6 +242,26 @@ int main(int argc, char *argv[]) {
             sendClientEvent(cxt, window, cxt->_NET_WM_MOVERESIZE, 5, x, y, 8, 1, 1);
 #endif
             break;
+        case KeyPress:
+            keysym = XLookupKeysym (&event.xkey, 0);
+            if (XK_h == keysym) {
+                fprintf(stdout, "h key press;try to hide\n");
+                XWithdrawWindow(cxt->display, window, cxt->screen_number);
+            } else if (XK_m == keysym) {
+                /* 窗口移动 */
+                XMoveWindow(cxt->display, window, 200, 100);
+            } else if (XK_i == keysym) {
+                /* 最小化 */
+                XIconifyWindow(cxt->display, window, cxt->screen_number);
+            } else if (XK_a == keysym) {
+                /* 最大化 */
+                sendClientEvent(cxt, window, cxt->_NET_WM_STATE, 4, 1, 
+                        XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_VERT", False),
+                        XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False), 0);
+            } else if (XK_q == keysym) {
+                fprintf(stdout, "try to quit\n");
+                exit(0);
+            }
         }
 	}
 	

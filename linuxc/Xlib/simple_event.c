@@ -2,6 +2,7 @@
  * @brief 测试各类事件
  * 
  * 编译：gcc simple_event.c -lX11
+ * 参考：窗口最大化、悬浮等：http://standards.freedesktop.org/wm-spec/wm-spec-latest.html#URGENCY
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,11 @@
 #define MWM_HINTS_FUNCTIONS     (1L << 0)
 #define MWM_HINTS_DECORATIONS   (1L << 1)
 #define PROP_MOTIF_WM_HINTS_ELEMENTS	5
+
+
+#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
+#define _NET_WM_STATE_ADD           1    /* add/set property */
+#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
 
 /** 事件名称 */
 const char* const X11_EVENT_STRINGS[] =
@@ -171,6 +177,33 @@ void sendClientEvent(testContext *cxt, Window window, Atom atom, unsigned int nu
 }
 
 /**
+ * @brief 设置窗口悬浮，设置后窗口一直显示在屏幕上
+ *
+ * _NET_WM_STATE_ABOVE indicates that the window should be on top of most windows
+ * 参考：http://stackoverflow.com/questions/20733215/how-to-make-a-window-always-on-top
+ *      http://standards.freedesktop.org/wm-spec/wm-spec-latest.html#URGENCY
+ */
+Status x11_set_window_on_top(testContext *cxt, Window window) {
+    XEvent event;
+    event.xclient.type = ClientMessage;
+    event.xclient.serial = 0;
+    event.xclient.send_event = True;
+    event.xclient.display = cxt->display;
+    event.xclient.window  = window;
+    event.xclient.message_type = XInternAtom (cxt->display, "_NET_WM_STATE", False);
+    event.xclient.format = 32;
+
+    event.xclient.data.l[0] = _NET_WM_STATE_ADD;
+    event.xclient.data.l[1] = XInternAtom (cxt->display, "_NET_WM_STATE_ABOVE", False);
+    event.xclient.data.l[2] = 0; //unused.
+    event.xclient.data.l[3] = 0;
+    event.xclient.data.l[4] = 0;
+
+    return XSendEvent (cxt->display, DefaultRootWindow(cxt->display), False,
+                       SubstructureRedirectMask|SubstructureNotifyMask, &event);
+}
+
+/**
  * @breif 创建窗口
  */
 Window create_window(testContext *cxt) {
@@ -190,8 +223,12 @@ Window create_window(testContext *cxt) {
 						InputOutput, DefaultVisual(cxt->display, 0),
 						0, &cxt->winAttrib);
 	setWindowDecorations(cxt, window, 0);	//设置后没有Ubuntu自带的关闭、最小和最大这三个键
+#if 1
+    x11_set_window_on_top(cxt, window);
+#else
     setWindowOverrideRedirect(cxt, window); //设置override redirect，设置后不受窗口管理器控制也没有任务栏图标
 //    xf_SetWindowUnlisted(cxt, window);      //设置后任务栏中没有图表
+#endif
 	return window;
 }
 
@@ -254,7 +291,8 @@ int main(int argc, char *argv[]) {
                 /* 最小化 */
                 XIconifyWindow(cxt->display, window, cxt->screen_number);
             } else if (XK_a == keysym) {
-                /* 最大化 */
+                // 最大化
+                //_NET_WM_STATE_MAXIMIZED_{VERT,HORZ} indicates that the window is {vertically,horizontally} maximized
                 sendClientEvent(cxt, window, cxt->_NET_WM_STATE, 4, 1, 
                         XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_VERT", False),
                         XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False), 0);

@@ -159,9 +159,27 @@ void sendClientEvent(AppContext *cxt, Window window, Atom atom, unsigned int num
 }
 
 /**
+ * @brief 恢复窗口显示
+ */
+void x11_restore_window(AppContext *cxt, AppWindow *appWindow) {
+    XClientMessageEvent ev;
+    memset(&ev, 0, sizeof(ev));
+    ev.type = ClientMessage;
+    ev.window = appWindow->handle;
+    ev.message_type = XInternAtom(cxt->display, "_NET_ACTIVE_WINDOW", True);
+    ev.format = 32;
+    ev.data.l[0] = 1;
+    ev.data.l[1] = CurrentTime;
+    ev.data.l[2] = ev.data.l[3] = ev.data.l[4] = 0;
+    XSendEvent (cxt->display, RootWindowOfScreen(cxt->screen), False,
+      SubstructureRedirectMask |SubstructureNotifyMask, (XEvent*)&ev);
+    XFlush (cxt->display);
+}
+
+/**
  * @breif 创建窗口
  */
-create_window(AppContext *cxt, AppWindow *appWindow) {
+void create_window(AppContext *cxt, AppWindow *appWindow) {
 	appWindow->handle = XCreateWindow(cxt->display, RootWindowOfScreen(cxt->screen),
 						appWindow->x, appWindow->y,
 						appWindow->width, appWindow->height,
@@ -246,6 +264,10 @@ int main(int argc, char *argv[]) {
             } else if (XK_i == keysym) {
                 /* 最小化 */
                 XIconifyWindow(cxt->display, appWindow.handle, cxt->screen_number);
+                XFlush(cxt->display);
+                sleep(3);
+                //等待3s恢复窗口显示
+                x11_restore_window(cxt, &appWindow);
             } else if (XK_a == keysym) {
                 // 最大化
                 //_NET_WM_STATE_MAXIMIZED_{VERT,HORZ} indicates that the window is {vertically,horizontally} maximized

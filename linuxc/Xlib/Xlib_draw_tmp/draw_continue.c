@@ -1,9 +1,8 @@
 /**
  * @breif 显示使用XGetImage从pixmap中保存的数据
  *
- * 每次显示创建新的窗口，可以看出每次更新的图像数据
- * 编译动态库：gcc -o draw.so draw_tmp.c -lX11 -fPIC -shared
- * 编译测试文件：gcc draw_tmp.c -D_DEBUG -lX11
+ * 创建一次窗口，更新这个窗口的图像，显示多次重叠后的图像数据
+ * 编译动态库：gcc -o draw_continue.so draw_continue.c -lX11 -fPIC -shared
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +37,7 @@ typedef struct _app_window {
     int width;
     int height;
     GC gc;
+    int winId;
 }AppWindow;
 
 struct _PropMotifWmHints
@@ -115,7 +115,7 @@ AppContext *app_context_new() {
     cxt->depth = 24;
     cxt->scanline_pad = 32;
     cxt->offset = 0;
-    cxt->visual = NULL/*DefaultVisual(cxt->display, cxt->screen_number)*/;
+    cxt->visual = DefaultVisual(cxt->display, cxt->screen_number);
 }
 
 void app_context_destroy(AppContext *cxt) {
@@ -128,7 +128,7 @@ void init_app_window(AppContext *cxt, AppWindow *appWindow) {
     int input_mask;
     XGCValues gcv;
     XWMHints* InputModeHint;
-#if 0
+#if 1
     appWindow->handle = XCreateWindow(cxt->display, RootWindowOfScreen(cxt->screen),
 						appWindow->x, appWindow->y,
 						appWindow->width, appWindow->height,
@@ -170,27 +170,56 @@ void destory_app_window(AppContext *cxt, AppWindow *appWindow) {
 }
 
 static AppContext *context = NULL;
+static AppWindow *appWindow = NULL;
+/**
+ * @brief 初始化显示资源
+ */
 void init_display() {
     context = app_context_new();
-    get_pixmap_info(context);
+    appWindow = (AppWindow *)malloc(sizeof(AppWindow));
+    memset(appWindow, 0, sizeof(AppWindow));
+    //get_pixmap_info(context);
     context->pixmap = XCreatePixmap(context->display, DefaultRootWindow(context->display), 1366, 768, context->depth);
 }
 
+/**
+ * @brief 显示图像
+ */
 void draw_window(char *fileName) {
     fprintf(stdout, "fileName:%s\n", fileName);
-    AppWindow appWindow;
     int ax, ay; //pixmap坐标
     int width, height; //copy图像的寬高
     int x, y; //window中图片的坐标
     int bytes_per_line;
+    int windowX, windowY; //窗口坐标
+    int windowW, windowH; //窗口尺寸
     int winId;
+    int inited = 0;
     sscanf(fileName, "tmp/%x_%u_%u_%u_%u_%u_%u_%u_%u_%u_%u_%u",
-        &winId, &appWindow.x, &appWindow.y, &appWindow.width, &appWindow.height, &ax, &ay, &width, &height, &x, &y, &bytes_per_line);
+        &winId, &windowX, &windowY, &windowW, &windowH, &ax, &ay, &width, &height, &x, &y, &bytes_per_line);
     fprintf(stdout, "%d %d %d %d %d %d %d\n", ax, ay, width, height, x, y, bytes_per_line); //使用sscanf从格式化的字符串中读取整数
-    init_app_window(context, &appWindow);
-    XClearWindow(context->display, appWindow.handle);
-    XMapWindow(context->display, appWindow.handle);
-    XMoveWindow(context->display, appWindow.handle, appWindow.x, appWindow.y);
+    if (0==appWindow->winId) {
+        //初始化窗口
+        inited = 1;
+        appWindow->x = windowX;
+        appWindow->y = windowY;
+        appWindow->width = windowW;
+        appWindow->height = windowH;
+        appWindow->winId = winId;
+        init_app_window(context, appWindow);
+        XClearWindow(context->display, appWindow->handle);
+        XMapWindow(context->display, appWindow->handle);
+        XMoveWindow(context->display, appWindow->handle, appWindow->x, appWindow->y);
+    } else if (appWindow->winId!=winId) {
+        //先只显示一个窗口
+        fprintf(stdout, "winId not equal:%x!=%x\n", appWindow->winId, winId);
+        return;
+    }
+    if ((appWindow->x!=windowX) || (appWindow->y!=windowY)) {
+        appWindow->x = windowX;
+        appWindow->y = windowY;
+        XMoveWindow(context->display, appWindow->handle, appWindow->x, appWindow->y);
+    }
     
     char *buf = (char *)malloc(width*height*4);
     FILE *fp = fopen(fileName, "r");
@@ -208,139 +237,43 @@ void draw_window(char *fileName) {
         fprintf(stderr, "XCreateImage error!\n");
         return;
     }
-
-    XEvent event;
-    while (1) {
-        XNextEvent(context->display, &event); //获取事件
-        if (event.type == Expose) {
-            /* !!!!!等待Expose后再复制数据，否则可能出现显示不出图像的问题 !!!!! */
-            XPutImage(context->display, context->pixmap, appWindow.gc,
-			        image, 0, 0, ax, ay, width, height);
-            XCopyArea(context->display, context->pixmap, appWindow.handle, appWindow.gc,
+    
+    XPutImage(context->display, context->pixmap, appWindow->gc,
+	        image, 0, 0, ax, ay, width, height);
+    if (!inited) {
+        XCopyArea(context->display, context->pixmap, appWindow->handle, appWindow->gc,
                     ax, ay, width, height, x, y);
-        } else if (event.type==ButtonPress) {
-            fprintf(stdout, "ButtonPress\n");
-            break;  
+    } else {
+        XEvent event;
+        while (1) {
+            XNextEvent(context->display, &event); //获取事件
+            if (event.type == Expose) {
+                fprintf(stdout, "event Expose\n");
+                /* !!!!!等待Expose后再复制数据，否则可能出现显示不出图像的问题 !!!!! */
+                XCopyArea(context->display, context->pixmap, appWindow->handle, appWindow->gc,
+                        ax, ay, width, height, x, y);
+                break;
+            } else if (event.type==ButtonPress) {
+                fprintf(stdout, "ButtonPress\n");
+                break;  
+            }
         }
     }
+
+    
     
     XFree(image);
     free(buf);
     fclose(fp);
-    destory_app_window(context, &appWindow);
-}
-
-void destroy_display() {
-    app_context_destroy(context);
-    context = NULL;
 }
 
 /**
- * fileName:appWindow->x, appWindow->y, appWindow->width, appWindow->height, ax, ay, width, height, x, y, image->bytes_per_line,  (UINT32)tv.tv_sec, (UINT32)tv.tv_usec, (UINT32)appWindow->handle
+ * @brief 释放资源
  */
-void draw_tmp_file(char *fileName) {
-    init_display();
-    draw_window(fileName);
-    destroy_display();
+void destroy_display() {
+    destory_app_window(context, appWindow);
+    free(appWindow);
+    app_context_destroy(context);
+    context = NULL;
 }
-
-#ifdef _DEBUG
-#if 1
-int main(int argc, char *argv[]) {
-    if (argc!=2) {
-        fprintf(stderr, "argc should be 2\n");
-        return 1;
-    }
-    draw_tmp_file(argv[1]);
-    return 0;
-}
-#else
-int main(int argc, char *argv[]) {
-    if (argc!=2) {
-        fprintf(stderr, "argc should be 2\n");
-        return 1;
-    }
-    Display *display = NULL;
-    Window window;
-    int screen_number;
-    Screen *screen;
-	XSetWindowAttributes winAttrib;
-    Pixmap pixmap;
-    Visual *visual;
-    GC gc;
-    int input_mask;
-    int format = ZPixmap;
-    int depth = 24;
-    int scanline_pad = 32;
-    int offset = 0;
-    int bytes_per_line = 0;
-    int windowX, windowY;
-    int windowW, windowH;
-    int ax, ay; //pixmap坐标
-    int width, height; //copy图像的寬高
-    int x, y; //window中图片的坐标
-    sscanf(argv[1], "tmp/%u_%u_%u_%u_%u_%u_%u_%u_%u_%u_%u",
-        &windowX, &windowY, &windowW, &windowH, &ax, &ay, &width, &height, &x, &y, &bytes_per_line);
-    fprintf(stdout, "%d %d %d %d %d %d %d\n", ax, ay, width, height, x, y, bytes_per_line); //使用sscanf从格式化的字符串中读取整数
-
-    display = XOpenDisplay(NULL);
-    screen_number = DefaultScreen(display);
-    screen = ScreenOfDisplay(display, screen_number);
-    visual = DefaultVisual(display, screen_number);
-    window = XCreateWindow(display, RootWindowOfScreen(screen),
-						windowX, windowY,
-						windowW, windowH,
-						0,
-						depth,
-						InputOutput, visual,
-						0, &winAttrib);
-    input_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
-				 ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
-				 PointerMotionMask | Button1MotionMask | Button2MotionMask |
-				 Button3MotionMask | Button4MotionMask | Button5MotionMask |
-				 ButtonMotionMask | KeymapStateMask | ExposureMask |
-				 VisibilityChangeMask | StructureNotifyMask | SubstructureNotifyMask |
-				 SubstructureRedirectMask | FocusChangeMask | PropertyChangeMask |
-				 ColormapChangeMask | OwnerGrabButtonMask;
-	XSelectInput(display, window, input_mask); //设置要响应的事件
-    XMapWindow(display, window);
-    XMoveWindow(display, window, windowX, windowY);
-    XFlush(display);
-    pixmap = XCreatePixmap(display, window, 1366, 768, depth);
-    gc = XCreateGC (display, window, 0, NULL); 
-
-    char *buf = (char *)malloc(width*height*4);
-    FILE *fp = fopen(argv[1], "r");
-    fread(buf, 1, width*height*4, fp);
-    XImage *image = XCreateImage (display,
-			visual, depth,
-			ZPixmap, 0,
-			buf,
-			width, height,
-			scanline_pad, bytes_per_line
-		);
-    
-
-    XEvent event;
-    while (1) {
-        XNextEvent(display, &event); //获取事件
-        if (event.type == Expose) {
-            XPutImage(display, pixmap, gc,
-			        image, 0, 0, ax, ay, width, height);
-            XCopyArea(display, pixmap, window, gc,
-                    ax, ay, width, height, x, y);
-        } else if (event.type==ButtonPress) {
-            fprintf(stdout, "ButtonPress\n");
-            break;  
-        }
-    }
-
-    XFree(image);
-    free(buf);
-    fclose(fp);
-    XCloseDisplay(display);    
-    return 0;
-}
-#endif
-#endif
 

@@ -13,7 +13,7 @@ path = 'tmp'
 mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
 files = list(sorted(os.listdir(path), key=mtime))
 
-winId = "48000e9"
+winId = "3a0017e"#"3a000fc"
 libc.init_display()
 for f in files:
     print(f)

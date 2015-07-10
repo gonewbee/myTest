@@ -10,6 +10,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <X11/Xutil.h>
 #include "xlib_jpeg.h"
 
 #define MWM_DECOR_ALL           (1L << 0)
@@ -65,13 +66,17 @@ typedef struct _app_context {
     int depth;
     Pixmap primary;
     Atom _NET_WM_STATE;
+    Atom _NET_WM_STATE_SKIP_PAGER;
+    Atom _NET_WM_STATE_SKIP_TASKBAR;
     Atom _MOTIF_WM_HINTS;
     Atom _NET_WM_MOVERESIZE;
+    Atom WM_DELETE_WINDOW;
 	XSetWindowAttributes winAttrib;
     int primary_x;  
     int primary_y;
     int primary_width;
     int primary_height;
+    Visual* visual;
 }AppContext;
 
 typedef struct _app_window {
@@ -82,6 +87,7 @@ typedef struct _app_window {
     int height;
     GC gc;
     Window parentWindow;
+    int is_transient; /**< 是否是瞬态窗口 */
 }AppWindow;
 
 struct _PropMotifWmHints
@@ -94,6 +100,44 @@ struct _PropMotifWmHints
 };
 typedef struct _PropMotifWmHints PropMotifWmHints;
 
+void get_pixmap_info(AppContext *cxt) {
+	int i;
+	int vi_count;
+	XVisualInfo* vi;
+	XVisualInfo* vis;
+	XVisualInfo template;
+	XWindowAttributes window_attributes;
+
+    memset(&template, 0, sizeof(template));
+    template.class = TrueColor;
+	template.screen = cxt->screen_number;
+    if (XGetWindowAttributes(cxt->display, RootWindowOfScreen(cxt->screen), &window_attributes) == 0)
+	{
+        fprintf(stderr, "XGetWindowAttributes error!!\n");
+		return;
+	}
+    vis = XGetVisualInfo(cxt->display, VisualClassMask | VisualScreenMask, &template, &vi_count);
+
+	if (!vis)
+	{
+		fprintf(stderr, "XGetVisualInfo failed");
+		return;
+	}
+    for (i = 0; i < vi_count; i++)
+	{
+		vi = vis + i;
+		if (vi->visual == window_attributes.visual)
+		{
+            fprintf(stdout, "get_pixmap_info get visual\n");
+			cxt->visual = vi->visual;
+			break;
+		}
+	}
+    XFree(vis);
+    if (cxt->visual == NULL) {
+        fprintf(stderr, "get_pixmap_info visul null\n");
+    }
+}
 
 /**
  * @breif 创建实例
@@ -102,8 +146,11 @@ AppContext *app_context_new() {
     AppContext *cxt = (AppContext *)malloc(sizeof(AppContext));
     cxt->display = XOpenDisplay(NULL);
     cxt->_NET_WM_STATE = XInternAtom(cxt->display, "_NET_WM_STATE", False);
+	cxt->_NET_WM_STATE_SKIP_PAGER = XInternAtom(cxt->display, "_NET_WM_STATE_SKIP_PAGER", False);
+	cxt->_NET_WM_STATE_SKIP_TASKBAR = XInternAtom(cxt->display, "_NET_WM_STATE_SKIP_TASKBAR", False);
 	cxt->_MOTIF_WM_HINTS = XInternAtom(cxt->display, "_MOTIF_WM_HINTS", False);
     cxt->_NET_WM_MOVERESIZE = XInternAtom(cxt->display, "_NET_WM_MOVERESIZE", False);
+    cxt->WM_DELETE_WINDOW = XInternAtom(cxt->display, "WM_DELETE_WINDOW", False);
     cxt->screen_number = DefaultScreen(cxt->display);
     cxt->screen = ScreenOfDisplay(cxt->display, cxt->screen_number);
     cxt->depth = DefaultDepthOfScreen(cxt->screen);
@@ -179,20 +226,78 @@ void x11_restore_window(AppContext *cxt, AppWindow *appWindow) {
 }
 
 /**
+ * @brief 设置后任务栏没有图表
+ */
+void xf_SetWindowUnlisted(AppContext *cxt, Window window)
+{
+	Atom window_state[2];
+
+	window_state[0] = cxt->_NET_WM_STATE_SKIP_PAGER;
+	window_state[1] = cxt->_NET_WM_STATE_SKIP_TASKBAR;
+
+	XChangeProperty(cxt->display, window, cxt->_NET_WM_STATE,
+			XA_ATOM, 32, PropModeReplace, (char *) &window_state, 2);
+}
+
+void xf_SetWindowPID(AppContext* xfc, Window window, pid_t pid)
+{
+	Atom am_wm_pid;
+
+	if (!pid)
+		pid = getpid();
+
+	am_wm_pid = XInternAtom(xfc->display, "_NET_WM_PID", False);
+
+	XChangeProperty(xfc->display, window, am_wm_pid, XA_CARDINAL,
+				32, PropModeReplace, (unsigned char*) &pid, 1);
+}
+
+/**
  * @breif 创建窗口
  */
 void create_window(AppContext *cxt, AppWindow *appWindow) {
 	int input_mask;
+    XGCValues gcv;
+	XWMHints* InputModeHint;
+    XClassHint* class_hints;
+
 	appWindow->handle = XCreateWindow(cxt->display, appWindow->parentWindow,
 						appWindow->x, appWindow->y,
 						appWindow->width, appWindow->height,
 						0,
 						cxt->depth,
-						InputOutput, DefaultVisual(cxt->display, 0),
+						InputOutput, cxt->visual/*DefaultVisual(cxt->display, 0)*/,
 						0, &cxt->winAttrib);
 	setWindowDecorations(cxt, appWindow->handle, 0);	//设置后没有Ubuntu自带的关闭、最小和最大这三个键
-    appWindow->gc = XCreateGC (cxt->display, appWindow->handle, 0, NULL); 
+    memset(&gcv, 0, sizeof(gcv));
+    appWindow->gc = XCreateGC (cxt->display, appWindow->handle, GCGraphicsExposures, &gcv); 
 	
+    class_hints = XAllocClassHint();
+    if (class_hints)
+	{
+		char* class = NULL;
+		
+		class = malloc(sizeof("RAIL:00000000"));
+		snprintf(class, sizeof("RAIL:00000000"), "RAIL:%08X", 0x12345);
+		class_hints->res_class = class;
+
+		class_hints->res_name = "RAIL";
+		XSetClassHint(cxt->display, appWindow->handle, class_hints);
+		XFree(class_hints);
+
+		free(class);
+	}
+
+    /* Set the input mode hint for the WM */
+	InputModeHint = XAllocWMHints();
+	InputModeHint->flags = (1L << 0);
+	InputModeHint->input = True;
+
+	XSetWMHints(cxt->display, appWindow->handle, InputModeHint);
+	XFree(InputModeHint);
+
+	XSetWMProtocols(cxt->display, appWindow->handle, &(cxt->WM_DELETE_WINDOW), 1);
+
 	input_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
 				 ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 				 PointerMotionMask | Button1MotionMask | Button2MotionMask |
@@ -202,6 +307,18 @@ void create_window(AppContext *cxt, AppWindow *appWindow) {
 				 SubstructureRedirectMask | FocusChangeMask | PropertyChangeMask |
 				 ColormapChangeMask | OwnerGrabButtonMask;
 	XSelectInput(cxt->display, appWindow->handle, input_mask); //设置要响应的事件
+    if (appWindow->is_transient) {
+        xf_SetWindowUnlisted(cxt, appWindow->handle);      //设置后任务栏中没有图表
+    }
+    xf_SetWindowPID(cxt, appWindow->handle, 0);
+    sendClientEvent(cxt, appWindow->handle, cxt->_NET_WM_STATE, 4, 0,
+					XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_VERT", False),
+					XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False), 0);
+
+
+    XClearWindow(cxt->display, appWindow->handle);
+	XMapWindow(cxt->display, appWindow->handle);
+    XMoveWindow(cxt->display, appWindow->handle, appWindow->x, appWindow->y);
 }
 
 /**
@@ -225,25 +342,24 @@ int main(int argc, char *argv[]) {
 	XEvent event;
 	
     AppContext *cxt = app_context_new();
+    get_pixmap_info(cxt);
     AppWindow appWindow;
     appWindow.x = 300;
     appWindow.y = 200;
     appWindow.width = 500;
     appWindow.height = 400;
     appWindow.parentWindow = RootWindowOfScreen(cxt->screen);
+    appWindow.is_transient = 0;
     create_window(cxt, &appWindow);
     AppWindow childWindow;
-    childWindow.x = 100;
-    childWindow.y = 100;
+    childWindow.x = 400;
+    childWindow.y = 300;
     childWindow.width = 300;
     childWindow.height = 200;
     childWindow.parentWindow = /*appWindow.handle*/RootWindowOfScreen(cxt->screen);
+    appWindow.is_transient = 1;
     create_window(cxt, &childWindow);
 	
-	XMapWindow(cxt->display, appWindow.handle);
-    XMapWindow(cxt->display, childWindow.handle);
-    XMoveWindow(cxt->display, appWindow.handle, appWindow.x, appWindow.y);
-    XMoveWindow(cxt->display, childWindow.handle, childWindow.x, childWindow.y);
 	XFlush(cxt->display);
     int x=0, y=0;
     KeySym keysym;
@@ -293,15 +409,15 @@ int main(int argc, char *argv[]) {
                             XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_VERT", False),
                             XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False), 0);
                 } else if (XK_s == keysym) {
-                    updatePixmap(cxt, &appWindow, "test2.jpg", 0, 0);
+                    updatePixmap(cxt, &appWindow, "test2.jpg", appWindow.x, appWindow.y);
                     XCopyArea(cxt->display, cxt->primary, appWindow.handle, appWindow.gc,
-			                cxt->primary_x, cxt->primary_y, cxt->primary_width, cxt->primary_height, cxt->primary_x, cxt->primary_y);
-	                XFlush(cxt->display);
-                    updatePixmap(cxt, &childWindow, "test.jpg", 50, 50);
+			                appWindow.x, appWindow.y, appWindow.width, appWindow.height, 0, 0);
+                    updatePixmap(cxt, &childWindow, "test.jpg", childWindow.x, childWindow.y);
                     XCopyArea(cxt->display, cxt->primary, childWindow.handle, childWindow.gc,
-			                cxt->primary_x, cxt->primary_y, cxt->primary_width, cxt->primary_height, cxt->primary_x, cxt->primary_y);
-	                XFlush(cxt->display);
-                } else if (XK_q == keysym) {
+			                childWindow.x, childWindow.y, childWindow.width, childWindow.height, 0, 0);
+                } else if (XK_t == keysym) {
+                    XUnmapWindow(cxt->display, childWindow.handle);
+                }else if (XK_q == keysym) {
                     fprintf(stdout, "try to quit\n");
                     exit(0);
                 }

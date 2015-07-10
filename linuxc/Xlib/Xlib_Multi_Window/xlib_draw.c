@@ -71,6 +71,7 @@ typedef struct _app_context {
     Atom _MOTIF_WM_HINTS;
     Atom _NET_WM_MOVERESIZE;
     Atom WM_DELETE_WINDOW;
+    Atom _NET_WM_WINDOW_TYPE;
 	XSetWindowAttributes winAttrib;
     int primary_x;  
     int primary_y;
@@ -151,6 +152,7 @@ AppContext *app_context_new() {
 	cxt->_MOTIF_WM_HINTS = XInternAtom(cxt->display, "_MOTIF_WM_HINTS", False);
     cxt->_NET_WM_MOVERESIZE = XInternAtom(cxt->display, "_NET_WM_MOVERESIZE", False);
     cxt->WM_DELETE_WINDOW = XInternAtom(cxt->display, "WM_DELETE_WINDOW", False);
+    cxt->_NET_WM_WINDOW_TYPE = XInternAtom(cxt->display, "_NET_WM_WINDOW_TYPE", False);
     cxt->screen_number = DefaultScreen(cxt->display);
     cxt->screen = ScreenOfDisplay(cxt->display, cxt->screen_number);
     cxt->depth = DefaultDepthOfScreen(cxt->screen);
@@ -231,7 +233,7 @@ void x11_restore_window(AppContext *cxt, AppWindow *appWindow) {
 void xf_SetWindowUnlisted(AppContext *cxt, Window window)
 {
 	Atom window_state[2];
-
+    fprintf(stdout, "===============xf_SetWindowUnlisted\n");
 	window_state[0] = cxt->_NET_WM_STATE_SKIP_PAGER;
 	window_state[1] = cxt->_NET_WM_STATE_SKIP_TASKBAR;
 
@@ -271,7 +273,8 @@ void create_window(AppContext *cxt, AppWindow *appWindow) {
 	setWindowDecorations(cxt, appWindow->handle, 0);	//设置后没有Ubuntu自带的关闭、最小和最大这三个键
     memset(&gcv, 0, sizeof(gcv));
     appWindow->gc = XCreateGC (cxt->display, appWindow->handle, GCGraphicsExposures, &gcv); 
-	
+#if 0
+    //设置后如果有两个窗口的话，窗口的图标在一起，和打开两个终端，终端在任务栏中的图标相似	
     class_hints = XAllocClassHint();
     if (class_hints)
 	{
@@ -297,7 +300,7 @@ void create_window(AppContext *cxt, AppWindow *appWindow) {
 	XFree(InputModeHint);
 
 	XSetWMProtocols(cxt->display, appWindow->handle, &(cxt->WM_DELETE_WINDOW), 1);
-
+#endif
 	input_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
 				 ButtonReleaseMask | EnterWindowMask | LeaveWindowMask |
 				 PointerMotionMask | Button1MotionMask | Button2MotionMask |
@@ -310,11 +313,12 @@ void create_window(AppContext *cxt, AppWindow *appWindow) {
     if (appWindow->is_transient) {
         xf_SetWindowUnlisted(cxt, appWindow->handle);      //设置后任务栏中没有图表
     }
+#if 0
     xf_SetWindowPID(cxt, appWindow->handle, 0);
     sendClientEvent(cxt, appWindow->handle, cxt->_NET_WM_STATE, 4, 0,
 					XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_VERT", False),
 					XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False), 0);
-
+#endif
 
     XClearWindow(cxt->display, appWindow->handle);
 	XMapWindow(cxt->display, appWindow->handle);
@@ -357,7 +361,7 @@ int main(int argc, char *argv[]) {
     childWindow.width = 300;
     childWindow.height = 200;
     childWindow.parentWindow = /*appWindow.handle*/RootWindowOfScreen(cxt->screen);
-    appWindow.is_transient = 1;
+    childWindow.is_transient = 1;
     create_window(cxt, &childWindow);
 	
 	XFlush(cxt->display);
@@ -389,6 +393,7 @@ int main(int argc, char *argv[]) {
                 break;
             case KeyPress:
                 keysym = XLookupKeysym (&event.xkey, 0);
+                fprintf(stdout, "KeyPress:%x\n", (unsigned int)keysym);
                 if (XK_h == keysym) {
                     fprintf(stdout, "h key press;try to hide\n");
                     XWithdrawWindow(cxt->display, eventWindow->handle, cxt->screen_number);
@@ -397,11 +402,16 @@ int main(int argc, char *argv[]) {
                     XMoveWindow(cxt->display, eventWindow->handle, 100, 50);
                 } else if (XK_i == keysym) {
                     /* 最小化 */
+                    #if 1
+                    XIconifyWindow(cxt->display, appWindow.handle, cxt->screen_number);
+                    XIconifyWindow(cxt->display, childWindow.handle, cxt->screen_number);
+                    #else
                     XIconifyWindow(cxt->display, eventWindow->handle, cxt->screen_number);
                     XFlush(cxt->display);
                     sleep(3);
-                    //等待3s恢复窗口显示
-                    x11_restore_window(cxt, &appWindow);
+                    等待3s恢复窗口显示
+                    x11_restore_window(cxt, eventWindow);
+                    #endif
                 } else if (XK_a == keysym) {
                     // 最大化
                     //_NET_WM_STATE_MAXIMIZED_{VERT,HORZ} indicates that the window is {vertically,horizontally} maximized
@@ -416,7 +426,21 @@ int main(int argc, char *argv[]) {
                     XCopyArea(cxt->display, cxt->primary, childWindow.handle, childWindow.gc,
 			                childWindow.x, childWindow.y, childWindow.width, childWindow.height, 0, 0);
                 } else if (XK_t == keysym) {
-                    XUnmapWindow(cxt->display, childWindow.handle);
+                    //XUnmapWindow(cxt->display, childWindow.handle); //XUnmapWindow后图像消失
+                    Atom window_type;
+                    //window_type = XInternAtom(cxt->display, "_NET_WM_WINDOW_TYPE_DOCK", False); //始终在其它窗口之上
+                    char str[] = "_NET_WM_WINDOW_TYPE_DND";
+                    window_type = XInternAtom(cxt->display, str, False);
+                    fprintf(stdout, "===================================XChangeProperty %s\n", str);
+                    XChangeProperty(cxt->display, childWindow.handle, cxt->_NET_WM_WINDOW_TYPE,
+				        XA_ATOM, 32, PropModeReplace, (unsigned char*) &window_type, 1);
+                    
+                } else if (XK_n == keysym) {
+                    fprintf(stdout, "====================XChangeProperty NORMAL\n");
+                    Atom window_type;
+                    window_type = XInternAtom(cxt->display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
+                    XChangeProperty(cxt->display, childWindow.handle, cxt->_NET_WM_WINDOW_TYPE,
+				        XA_ATOM, 32, PropModeReplace, (unsigned char*) &window_type, 1);
                 }else if (XK_q == keysym) {
                     fprintf(stdout, "try to quit\n");
                     exit(0);

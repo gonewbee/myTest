@@ -241,6 +241,23 @@ void xf_SetWindowUnlisted(AppContext *cxt, Window window)
 			XA_ATOM, 32, PropModeReplace, (char *) &window_state, 2);
 }
 
+/**
+ * @brief 设置图标名称
+ */
+void xf_SetWindowText(AppContext* xfc, AppWindow* appWindow, char* name)
+{
+	fprintf(stdout, "xf_SetWindowText::::::::%s\n", name);
+	XStoreName(xfc->display, appWindow->handle, name);
+	const size_t i = strlen(name);
+	XStoreName(xfc->display, appWindow->handle, name);
+
+	Atom wm_Name = XInternAtom(xfc->display, "_NET_WM_NAME", False);
+	Atom utf8Str = XInternAtom(xfc->display, "UTF8_STRING", False);
+
+	XChangeProperty(xfc->display, appWindow->handle, wm_Name, utf8Str, 8,
+	                PropModeReplace, (unsigned char *)name, i);
+}
+
 void xf_SetWindowPID(AppContext* xfc, Window window, pid_t pid)
 {
 	Atom am_wm_pid;
@@ -363,6 +380,7 @@ int main(int argc, char *argv[]) {
     childWindow.parentWindow = /*appWindow.handle*/RootWindowOfScreen(cxt->screen);
     childWindow.is_transient = 1;
     create_window(cxt, &childWindow);
+    xf_SetWindowText(cxt, &appWindow, "Hello World");
 	
 	XFlush(cxt->display);
     int x=0, y=0;

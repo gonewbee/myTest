@@ -413,8 +413,13 @@ int main(int argc, char *argv[]) {
                 keysym = XLookupKeysym (&event.xkey, 0);
                 fprintf(stdout, "KeyPress:%x\n", (unsigned int)keysym);
                 if (XK_h == keysym) {
+                    //隐藏窗口
+                    //XWithdrawWindow会产生UnmapNotify，若想恢复显示需要重新调用XMapWindow
                     fprintf(stdout, "h key press;try to hide\n");
-                    XWithdrawWindow(cxt->display, eventWindow->handle, cxt->screen_number);
+                    XWithdrawWindow(cxt->display, childWindow.handle, cxt->screen_number);
+                } else if (XK_r == keysym) {
+                    fprintf(stdout, "r key press!!\n");
+                    XMapWindow(cxt->display, childWindow.handle);
                 } else if (XK_m == keysym) {
                     /* 窗口移动 */
                     XMoveWindow(cxt->display, eventWindow->handle, 100, 50);

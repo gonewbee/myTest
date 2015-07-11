@@ -432,7 +432,7 @@ int main(int argc, char *argv[]) {
                     XIconifyWindow(cxt->display, eventWindow->handle, cxt->screen_number);
                     XFlush(cxt->display);
                     sleep(3);
-                    等待3s恢复窗口显示
+                    //等待3s恢复窗口显示
                     x11_restore_window(cxt, eventWindow);
                     #endif
                 } else if (XK_a == keysym) {

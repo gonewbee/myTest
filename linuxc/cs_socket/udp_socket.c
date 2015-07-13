@@ -59,13 +59,22 @@ int start_client() {
     slen = sizeof(s_addr);
 
     c_fd = socket(AF_INET,SOCK_DGRAM,0);//IPV4  SOCK_DGRAM 数据报套接字（UDP协议）
+    struct timeval timeout={4,0};
+    setsockopt(c_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(struct timeval)); //设置接收超时时间，需要使用struct timeval
     int i = 0;
     char buf[32] = {0};
     char recv[32] = {0};
     for (i=0; i<10; i++) {
         snprintf(buf, sizeof(buf)-1, "Hello World!::%u", i);
-        sendto(c_fd, buf, sizeof(buf), 0, (struct sockaddr *)&s_addr, slen);
-        recvfrom(c_fd, recv, 32, 0, (struct sockaddr *)&s_addr, &slen);
+        if (-1==sendto(c_fd, buf, sizeof(buf), 0, (struct sockaddr *)&s_addr, slen)) {
+            perror("sendto");
+            break;        
+        }
+        fprintf(stdout, "send ok\n");
+        if (-1==recvfrom(c_fd, recv, 32, 0, (struct sockaddr *)&s_addr, &slen)) {
+            perror("recvfrom");
+            break;
+        }
         fprintf(stdout, "recv:%s\n", recv);
         sleep(1);
     }

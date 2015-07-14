@@ -7,11 +7,17 @@
   */
 
 #include <QPushButton>
+#include <QFile>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
 class AppItem : public QPushButton
 {
+    Q_OBJECT //如果要加slot的话，需要在h文件中加Q_OBJECT，如果加Q_OBJECT后编译出错，重新执行qmake
+
 public:
-    AppItem();
+    explicit AppItem(QWidget *parent = 0);
+    ~AppItem();
 
     QString getRdpIp();
     void setRdpIp(QString ip);
@@ -24,13 +30,22 @@ public:
     QString getAppCmd();
     void setAppCmd(QString cmd);
 
-
+    void downNetIcon(QString url);
 private:
     QString rdpIp;
     QString rdpUser;
     QString rdpPwd;
     QString appName;
     QString appCmd;
+    QString iconName; /**< 图标名称 */
+    QFile *iconFile; /**< 用于保存网络下载的图标 */
+
+    QNetworkAccessManager *accessManager;
+    QNetworkReply *reply;
+
+private slots:
+    void httpReadyRead();
+    void httpFinished();
 };
 
 #endif // APPITEM_H

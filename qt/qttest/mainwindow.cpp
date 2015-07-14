@@ -44,12 +44,13 @@ void MainWindow::app_btn_clicked() {
 }
 
 void MainWindow::testAppItems() {
-    AppItem *appitem = new AppItem();
+    AppItem *appitem = new AppItem(this);
     appitem->setRdpIp("192.168.1.74");
     appitem->setRdpUser("administrator");
     appitem->setRdpPwd("Aa123!");
     appitem->setAppName("||WINWORD");
     appitem->setText("WINWORD");
+    appitem->downNetIcon("http://avatar.csdn.net/2/F/3/1_omingzi12345678.jpg");
     appList.append(appitem);
     connect(appitem, SIGNAL(clicked()), this, SLOT(app_btn_clicked()));
 
@@ -59,6 +60,7 @@ void MainWindow::testAppItems() {
     appitem2->setRdpPwd("Aa123!");
     appitem2->setAppName("||EXCEL");
     appitem2->setText("EXCEL");
+    appitem2->downNetIcon("http://avatar.csdn.net/5/B/0/1_lslxdx.jpg");
     appList.append(appitem2);
     connect(appitem2, SIGNAL(clicked()), this, SLOT(app_btn_clicked()));
 

@@ -89,6 +89,7 @@ typedef struct _app_window {
     GC gc;
     Window parentWindow;
     int is_transient; /**< 是否是瞬态窗口 */
+    int windowId; /**< XSetClassHint时使用 */
 }AppWindow;
 
 struct _PropMotifWmHints
@@ -290,15 +291,15 @@ void create_window(AppContext *cxt, AppWindow *appWindow) {
 	setWindowDecorations(cxt, appWindow->handle, 0);	//设置后没有Ubuntu自带的关闭、最小和最大这三个键
     memset(&gcv, 0, sizeof(gcv));
     appWindow->gc = XCreateGC (cxt->display, appWindow->handle, GCGraphicsExposures, &gcv); 
-#if 0
-    //设置后如果有两个窗口的话，窗口的图标在一起，和打开两个终端，终端在任务栏中的图标相似	
+#if 1
+    //如果两个窗口的res_class和res_name相同的话，窗口的图标在一起，和打开两个终端，终端在任务栏中的图标相似	
     class_hints = XAllocClassHint();
     if (class_hints)
 	{
 		char* class = NULL;
 		
 		class = malloc(sizeof("RAIL:00000000"));
-		snprintf(class, sizeof("RAIL:00000000"), "RAIL:%08X", 0x12345);
+		snprintf(class, sizeof("RAIL:00000000"), "RAIL:%08X", appWindow->windowId);
 		class_hints->res_class = class;
 
 		class_hints->res_name = "RAIL";
@@ -371,6 +372,7 @@ int main(int argc, char *argv[]) {
     appWindow.height = 400;
     appWindow.parentWindow = RootWindowOfScreen(cxt->screen);
     appWindow.is_transient = 0;
+    appWindow.windowId = 0x12345;
     create_window(cxt, &appWindow);
     AppWindow childWindow;
     childWindow.x = 400;
@@ -378,7 +380,8 @@ int main(int argc, char *argv[]) {
     childWindow.width = 300;
     childWindow.height = 200;
     childWindow.parentWindow = /*appWindow.handle*/RootWindowOfScreen(cxt->screen);
-    childWindow.is_transient = 1;
+    childWindow.is_transient = 0/*1*/;
+    childWindow.windowId = 0x12345/*0x23456*/;
     create_window(cxt, &childWindow);
     xf_SetWindowText(cxt, &appWindow, "Hello World");
 	
@@ -448,7 +451,12 @@ int main(int argc, char *argv[]) {
                     updatePixmap(cxt, &childWindow, "test.jpg", childWindow.x, childWindow.y);
                     XCopyArea(cxt->display, cxt->primary, childWindow.handle, childWindow.gc,
 			                childWindow.x, childWindow.y, childWindow.width, childWindow.height, 0, 0);
-                } else if (XK_t == keysym) {
+                } else if (XK_p == keysym) {
+                    //XSetFunction(cxt->display, appWindow.gc, /*GXcopy*/GXset);
+                    updatePixmap(cxt, &appWindow, "test.jpg", appWindow.x, appWindow.y);
+                    XCopyArea(cxt->display, cxt->primary, appWindow.handle, appWindow.gc,
+			                appWindow.x, appWindow.y, cxt->primary_width, cxt->primary_height, 0, 0);
+                }else if (XK_t == keysym) {
                     //XUnmapWindow(cxt->display, childWindow.handle); //XUnmapWindow后图像消失
                     Atom window_type;
                     //window_type = XInternAtom(cxt->display, "_NET_WM_WINDOW_TYPE_DOCK", False); //始终在其它窗口之上

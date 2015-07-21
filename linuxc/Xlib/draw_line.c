@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "XFlush\n");
 	XFlush(dsp);
 	debug_wait(); /* XFlush后可以看到窗口 */
-	
+
+    sleep(1); //需要等待expose事件后设置图像才能显示出来，如果不等待expose可以等一段时间在设置图像内容	
 	GC gc = XCreateGC(dsp, win,
 						0,
 						NULL); /* 申请Graphics Context */

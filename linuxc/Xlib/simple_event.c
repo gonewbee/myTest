@@ -255,6 +255,7 @@ int main(int argc, char *argv[]) {
     int x=0, y=0;
     int width=200, height=300;
     KeySym keysym;
+    int num = 0;
 	while (1) {
 		XNextEvent(cxt->display, &event); //获取事件
 		if (event.type!=MotionNotify)
@@ -300,6 +301,24 @@ int main(int argc, char *argv[]) {
                 fprintf(stdout, "try to quit\n");
                 exit(0);
             }
+            break;
+        case ConfigureNotify:
+            if (num++>30) {
+                int x, y;
+                int child_x;
+                int child_y;
+                unsigned int mask;
+                Window root_window;
+                Window child_window;
+                XQueryPointer(cxt->display, window,
+                    &root_window, &child_window, &x, &y, &child_x, &child_y, &mask); // 鼠标当前位置
+                fprintf(stdout, "button position-----------------%d %d %d %d \n", x, y, child_x, child_y);
+                fprintf(stdout, "test to stop move=================\n");
+                // 停止窗口拖动
+                sendClientEvent(cxt, window, cxt->_NET_WM_MOVERESIZE, 5, 0, 0, 11, 1, 1);
+                num = 0;
+            }
+            break;
         }
 	}
 	

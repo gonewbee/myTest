@@ -7,9 +7,11 @@
         body {
             margin: 0;
         }
+        .container {
+            text-align:center;
+        }
         .top {
             position: absolute;
-            text-align:center;
             left: 0; right: 0;
             height: 72px;
             border-bottom-style: solid;
@@ -22,10 +24,20 @@
             background-color: #f8f8f8;
             color:#333;
         }
+        .sidebar {
+            display: none;
+        }
         .content {
             position: absolute;
-            left: 178px;top: 72px;
+            top: 72px;
+            padding-left: 10px;
         }
+        label:hover {background-color: #f00}
+        #sideToggle {
+            display: none;
+        }
+        #sideToggle:checked + .sidebar{display: block}
+        #sideToggle:checked ~ .content{left: 172px}
     </style>
 </head>
 <body>
@@ -33,10 +45,12 @@
     <div class="top">
         <p>html5侧边栏</p>
     </div>
+    <input type="checkbox" id="sideToggle">
     <div class="sidebar">
-        <p>菜单</p>
+        <p>菜单内容</p>
     </div>
     <div class="content">
+        <label id="sideBarControl" for="sideToggle">菜单</label>
         <p>内容</p>
     </div>
 </div>

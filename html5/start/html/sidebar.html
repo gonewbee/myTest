@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>侧边栏</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+        .top {
+            position: absolute;
+            text-align:center;
+            left: 0; right: 0;
+            height: 72px;
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+        }
+        .sidebar {
+            position: absolute;
+            left: 0; top: 72px; bottom: 0;
+            width: 178px;
+            background-color: #f8f8f8;
+            color:#333;
+        }
+        .content {
+            position: absolute;
+            left: 178px;top: 72px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top">
+        <p>html5侧边栏</p>
+    </div>
+    <div class="sidebar">
+        <p>菜单</p>
+    </div>
+    <div class="content">
+        <p>内容</p>
+    </div>
+</div>
+</body>
+</html>

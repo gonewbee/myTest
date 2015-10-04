@@ -86,14 +86,16 @@
 
 <script>
     var as = document.querySelectorAll(".nav li");
-    for (var i=0; i<as.length; i++) {
-        as[i].addEventListener("click", function(e) {
-            var actives = document.querySelector(".nav li.active");
-            if (actives!=null)
-                actives.classList.remove("active");
+//    可以使用Array.prototype.forEach.call进行遍历
+    [].forEach.call(as, function (item) {
+        item.addEventListener("click", function() {
+//            遍历所有兄弟节点this.parentNode.children
+            Array.prototype.forEach.call(this.parentNode.children, function (child) {
+                child.classList.remove("active");
+            })
             this.classList.add("active");
         });
-    }
+    });
 </script>
 </body>
 </html>

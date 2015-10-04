@@ -67,35 +67,36 @@
 <body>
 <div class="container">
     <div class="top">
-        <p>html5侧边栏</p>
+        <label id="sideBarControl" for="sideToggle">显示/隐藏菜单</label>
     </div>
     <input type="checkbox" id="sideToggle">
     <div class="sidebar">
         <p>菜单内容</p>
         <ul class="nav">
-            <li><a href="#">Menu1</a> </li>
-            <li><a href="#">Menu2</a> </li>
-            <li><a href="#">Menu3</a> </li>
+            <li><a id="_1" href="#">Menu1</a> </li>
+            <li><a id="_2" href="#">Menu2</a> </li>
+            <li><a id="_3" href="#">Menu3</a> </li>
         </ul>
     </div>
     <div class="content">
-        <label id="sideBarControl" for="sideToggle">菜单</label>
-        <p>内容</p>
     </div>
 </div>
 
 <script>
-    var as = document.querySelectorAll(".nav li");
+    var items = document.querySelectorAll(".nav li");
 //    可以使用Array.prototype.forEach.call进行遍历
-    [].forEach.call(as, function (item) {
+    [].forEach.call(items, function (item) {
         item.addEventListener("click", function() {
 //            遍历所有兄弟节点this.parentNode.children
             Array.prototype.forEach.call(this.parentNode.children, function (child) {
                 child.classList.remove("active");
             })
             this.classList.add("active");
+            var content = document.querySelector(".content");
+            content.innerHTML = this.textContent;
         });
     });
+    document.querySelector("#_1").click(); // 模拟点击
 </script>
 </body>
 </html>

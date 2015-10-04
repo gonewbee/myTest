@@ -14,6 +14,7 @@
             position: absolute;
             left: 0; right: 0;
             height: 72px;
+            background-color: #00ffff;
             border-bottom-style: solid;
             border-bottom-width: 1px;
         }
@@ -21,23 +22,46 @@
             position: absolute;
             left: 0; top: 72px; bottom: 0;
             width: 178px;
-            background-color: #f8f8f8;
-            color:#333;
+            background-color: #888888;
         }
         .sidebar {
             display: none;
         }
         .content {
             position: absolute;
-            top: 72px;
-            padding-left: 10px;
+            left:0; top: 72px; right: 0; bottom: 0;
+            background-color: #f8f8f8;
         }
-        label:hover {background-color: #f00}
+        label:hover {background-color: #ff0}
         #sideToggle {
             display: none;
         }
         #sideToggle:checked + .sidebar{display: block}
-        #sideToggle:checked ~ .content{left: 172px}
+        #sideToggle:checked ~ .content{left: 178px}
+        .nav {
+            list-style: none;
+            position: absolute;
+            left: 0;right: 0;
+            padding: 0;
+        }
+        .nav a:link{color: #000}
+        .nav a:visited {color: #000}
+        .nav a:hover {
+            color: #aaaaaa;
+        }
+        .nav li {
+            border: solid 1px;
+            padding: 5px 0 5px 0;
+            border-bottom-width: 0px;
+        }
+        .nav li:last-child {border-bottom-width: 1px}
+        .nav a {
+            text-decoration: none;
+        }
+        li.active {
+            background-color: #f8f8f8;
+            border-right-width: 0px;
+        }
     </style>
 </head>
 <body>
@@ -48,11 +72,28 @@
     <input type="checkbox" id="sideToggle">
     <div class="sidebar">
         <p>菜单内容</p>
+        <ul class="nav">
+            <li><a href="#">Menu1</a> </li>
+            <li><a href="#">Menu2</a> </li>
+            <li><a href="#">Menu3</a> </li>
+        </ul>
     </div>
     <div class="content">
         <label id="sideBarControl" for="sideToggle">菜单</label>
         <p>内容</p>
     </div>
 </div>
+
+<script>
+    var as = document.querySelectorAll(".nav li");
+    for (var i=0; i<as.length; i++) {
+        as[i].addEventListener("click", function(e) {
+            var actives = document.querySelector(".nav li.active");
+            if (actives!=null)
+                actives.classList.remove("active");
+            this.classList.add("active");
+        });
+    }
+</script>
 </body>
 </html>

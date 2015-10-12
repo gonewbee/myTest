@@ -1,0 +1,3 @@
+# 参考:http://stackoverflow.com/questions/11354518/golang-application-auto-build-versioning
+# 设置minversion的默认值，-u设置utc时间
+go build -ldflags "-X main.minversion=`date -u +.%Y%m%d.%H%M%S`" version.go

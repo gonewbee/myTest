@@ -1,0 +1,4 @@
+# 编译动态库
+gcc -fPIC -shared hello.c -o libhello.so
+# -ldflags "-r=."指定了运行时动态库的位置
+go build -ldflags "-r=." -v hello.go

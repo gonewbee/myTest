@@ -1,7 +1,7 @@
 /**
  * @brief 测试各类事件
  * 
- * 编译：gcc simple_event.c -lX11
+ * 编译：gcc simple_event.c -lX11 -lXcursor
  * 参考：窗口最大化、悬浮等：http://standards.freedesktop.org/wm-spec/wm-spec-latest.html#URGENCY
  */
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <X11/Xcursor/Xcursor.h>
 
 #define MWM_DECOR_ALL           (1L << 0)
 #define MWM_FUNC_ALL            (1L << 0)
@@ -297,13 +298,18 @@ int main(int argc, char *argv[]) {
                 sendClientEvent(cxt, window, cxt->_NET_WM_STATE, 4, 1, 
                         XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_VERT", False),
                         XInternAtom(cxt->display, "_NET_WM_STATE_MAXIMIZED_HORZ", False), 0);
+            } else if (XK_c == keysym) {
+            	fprintf(stdout, "c press\n");
+            	// Cursor c = XcursorLibraryLoadCursor(cxt->display, "sb_v_double_arrow");
+            	Cursor c = XcursorLibraryLoadCursor(cxt->display, "pencil");
+            	XDefineCursor(cxt->display, window, c);
             } else if (XK_q == keysym) {
                 fprintf(stdout, "try to quit\n");
                 exit(0);
             }
             break;
         case ConfigureNotify:
-            if (num++>30) {
+            if (num++>100) {
                 int x, y;
                 int child_x;
                 int child_y;

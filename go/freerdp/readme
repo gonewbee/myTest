@@ -1,0 +1,2 @@
+# go build -ldflags "-r=/home/zsy/Workspace/code/ubuntu14/FreeRDP/libfreerdp" -v main.go
+go build -ldflags "-r=/home/zsy/Workspace/code/ubuntu14/FreeRDP/libfreerdp:/home/zsy/Workspace/code/ubuntu14/FreeRDP/client/common" -v .

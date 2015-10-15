@@ -1,2 +1,4 @@
 main
 freerdp
+*.sublime-workspace
+*.sublime-project

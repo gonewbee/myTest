@@ -7,6 +7,8 @@ package main
 // #include "freerdp/freerdp.h"
 // #include "freerdp/client.h"
 /*
+#include "webrdp.h"
+
 extern BOOL webfreerdp_client_global_init();
 extern void webfreerdp_client_global_uninit();
 extern BOOL webfreerdp_client_new(freerdp* instance, rdpContext* context);
@@ -19,9 +21,14 @@ extern BOOL web_post_connect(freerdp* instance);
 extern BOOL web_authenticate(freerdp* instance, char** username, char** password, char** domain);
 extern BOOL web_verify_certificate(freerdp* instance, char* subject, char* issuer, char* fingerprint);
 
-typedef struct {
-	rdpContext context;
-} webContext;
+
+extern BOOL webRdpBitmapNew(rdpContext* context, rdpBitmap* bitmap);
+extern void webRdpBitmapFree(rdpContext* context, rdpBitmap* bitmap);
+extern BOOL webRdpBitmapPaint(rdpContext* context, rdpBitmap* bitmap);
+extern BOOL webRdpBitmapDecompress(rdpContext* context, rdpBitmap* bitmap,
+		BYTE* data, int width, int height, int bpp, int length,
+		BOOL compressed, int codec_id);
+extern BOOL webRdpBitmapSetSurface(rdpContext* context, rdpBitmap* bitmap, BOOL primary);
 
 static int RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints) {
 	pEntryPoints->Version = 1;
@@ -42,6 +49,83 @@ static void setFuncInClient(freerdp *instance) {
 	instance->Authenticate = web_authenticate;
 	instance->VerifyCertificate = web_verify_certificate;
 }
+
+static void web_pre_connect_set(freerdp *instance) {
+	rdpSettings* settings;
+	settings = instance->settings;
+	settings->RemoteFxCodec = 0;
+    settings->FastPathOutput = 1;
+    settings->ColorDepth = 16;
+    settings->FrameAcknowledge = 1;
+    settings->LargePointerFlag = 1;
+    settings->BitmapCacheV3Enabled = 0;
+    settings->BitmapCachePersistEnabled = 0;
+
+    settings->OrderSupport[NEG_DSTBLT_INDEX] = TRUE;
+    settings->OrderSupport[NEG_PATBLT_INDEX] = TRUE;
+    settings->OrderSupport[NEG_SCRBLT_INDEX] = TRUE;
+    settings->OrderSupport[NEG_OPAQUE_RECT_INDEX] = TRUE;
+    settings->OrderSupport[NEG_DRAWNINEGRID_INDEX] = FALSE;
+    settings->OrderSupport[NEG_MULTIDSTBLT_INDEX] = FALSE;
+    settings->OrderSupport[NEG_MULTIPATBLT_INDEX] = FALSE;
+    settings->OrderSupport[NEG_MULTISCRBLT_INDEX] = FALSE;
+    settings->OrderSupport[NEG_MULTIOPAQUERECT_INDEX] = TRUE;
+    settings->OrderSupport[NEG_MULTI_DRAWNINEGRID_INDEX] = FALSE;
+    settings->OrderSupport[NEG_LINETO_INDEX] = TRUE;
+    settings->OrderSupport[NEG_POLYLINE_INDEX] = TRUE;
+    settings->OrderSupport[NEG_MEMBLT_INDEX] = FALSE;
+
+    settings->OrderSupport[NEG_MEM3BLT_INDEX] = FALSE;
+
+    settings->OrderSupport[NEG_MEMBLT_V2_INDEX] = FALSE;
+    settings->OrderSupport[NEG_MEM3BLT_V2_INDEX] = FALSE;
+    settings->OrderSupport[NEG_SAVEBITMAP_INDEX] = FALSE;
+    settings->OrderSupport[NEG_GLYPH_INDEX_INDEX] = TRUE;
+    settings->OrderSupport[NEG_FAST_INDEX_INDEX] = TRUE;
+    settings->OrderSupport[NEG_FAST_GLYPH_INDEX] = TRUE;
+
+    settings->OrderSupport[NEG_POLYGON_SC_INDEX] = FALSE;
+    settings->OrderSupport[NEG_POLYGON_CB_INDEX] = FALSE;
+
+    settings->OrderSupport[NEG_ELLIPSE_SC_INDEX] = FALSE;
+    settings->OrderSupport[NEG_ELLIPSE_CB_INDEX] = FALSE;
+
+	settings->GlyphSupportLevel = GLYPH_SUPPORT_NONE;
+}
+
+static BOOL web_register_graphics(rdpGraphics* graphics) {
+	rdpBitmap* bitmap = NULL;
+	rdpPointer* pointer = NULL;
+	rdpGlyph* glyph = NULL;
+	BOOL ret = FALSE;
+
+	if (!(bitmap = (rdpBitmap*) calloc(1, sizeof(rdpBitmap))))
+		goto out;
+
+	if (!(pointer = (rdpPointer*) calloc(1, sizeof(rdpPointer))))
+		goto out;
+
+	if (!(glyph = (rdpGlyph*) calloc(1, sizeof(rdpGlyph))))
+		goto out;
+
+	bitmap->size = sizeof(web_rdp_bitmap);
+	bitmap->New = webRdpBitmapNew;
+	bitmap->Free = webRdpBitmapFree;
+	bitmap->Paint = webRdpBitmapPaint;
+	bitmap->Decompress = webRdpBitmapDecompress;
+	bitmap->SetSurface = webRdpBitmapSetSurface;
+
+	graphics_register_bitmap(graphics, bitmap);
+
+	ret = TRUE;
+
+out:
+	free(bitmap);
+	free(pointer);
+	free(glyph);
+
+	return ret;
+}
 */
 import "C"
 
@@ -60,12 +144,17 @@ func test() {
 //export web_pre_connect
 func web_pre_connect(instance *C.freerdp) C.BOOL {
 	log.Println("web_pre_connect")
+	C.web_pre_connect_set(instance)
 	return C.TRUE
 }
 
 //export web_post_connect
 func web_post_connect(instance *C.freerdp) C.BOOL {
 	log.Println("web_post_connect")
+	var update *C.rdpUpdate
+	update = instance.context.update
+	C.web_register_graphics(instance.context.graphics)
+	webGdiRegisterUpdateCallbacks(update)
 	return C.TRUE
 }
 
@@ -122,8 +211,8 @@ func setRdpInfo(context *C.rdpContext) {
 	settings := context.instance.settings
 	log.Printf("w:%d h:%d", settings.DesktopWidth, settings.DesktopHeight)
 	settings.ServerHostname = C.CString("192.168.102.12")
-	settings.Username = C.CString("administrator")
-	settings.Password = C.CString("Aa123!")
+	settings.Username = C.CString("2@masscloudsil.com")
+	settings.Password = C.CString("123456")
 	// defer C.free(unsafe.Pointer(settings.ServerHostname))
 	// defer C.free(unsafe.Pointer(settings.Username))
 	// defer C.free(unsafe.Pointer(settings.Password))

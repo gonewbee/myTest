@@ -4,10 +4,13 @@ package main
 // #cgo CFLAGS: -I/home/zsy/Workspace/code/ubuntu14/FreeRDP/winpr/include
 // #cgo LDFLAGS: -L/home/zsy/Workspace/code/ubuntu14/FreeRDP/libfreerdp -lfreerdp
 // #cgo LDFLAGS: -L/home/zsy/Workspace/code/ubuntu14/FreeRDP/client/common -lfreerdp-client
+// #cgo LDFLAGS: -L/home/zsy/Workspace/code/ubuntu14/FreeRDP/winpr/libwinpr -lwinpr
 // #include "freerdp/freerdp.h"
 // #include "freerdp/client.h"
 /*
 #include "webrdp.h"
+#include "freerdp/cache/glyph.h"
+#include "freerdp/channels/channels.h"
 
 extern BOOL webfreerdp_client_global_init();
 extern void webfreerdp_client_global_uninit();
@@ -43,7 +46,8 @@ static int RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints) {
 	return 0;
 }
 
-static void setFuncInClient(freerdp *instance) {
+static void setFuncInClient(freerdp *instance, rdpContext* context) {
+	context->channels = freerdp_channels_new();
 	instance->PreConnect = web_pre_connect;
 	instance->PostConnect = web_post_connect;
 	instance->Authenticate = web_authenticate;
@@ -91,6 +95,9 @@ static void web_pre_connect_set(freerdp *instance) {
     settings->OrderSupport[NEG_ELLIPSE_CB_INDEX] = FALSE;
 
 	settings->GlyphSupportLevel = GLYPH_SUPPORT_NONE;
+
+	if (!instance->context->cache)
+		instance->context->cache = cache_new(instance->settings);
 }
 
 static BOOL web_register_graphics(rdpGraphics* graphics) {
@@ -126,6 +133,38 @@ out:
 
 	return ret;
 }
+
+static void web_client_func(freerdp* instance) {
+	BOOL status;
+	DWORD nCount;
+	DWORD waitStatus;
+	HANDLE handles[64];
+	rdpContext* context;
+
+	context = instance->context;
+	status = freerdp_connect(instance);
+
+	while (!freerdp_shall_disconnect(instance)) {
+		nCount = 0;
+		DWORD tmp = freerdp_get_event_handles(context, &handles[nCount], 64 - nCount);
+		if (tmp == 0)
+		{
+			fprintf(stderr, "freerdp_get_event_handles failed\n");
+			break;
+		}
+		nCount += tmp;
+
+		waitStatus = WaitForMultipleObjects(nCount, handles, FALSE, 100);
+
+		if (!freerdp_check_event_handles(context))
+		{
+			fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
+			break;
+		}
+	}
+	fprintf(stdout, "web_client_func==========end\n");
+	freerdp_disconnect(instance);
+}
 */
 import "C"
 
@@ -155,6 +194,13 @@ func web_post_connect(instance *C.freerdp) C.BOOL {
 	update = instance.context.update
 	C.web_register_graphics(instance.context.graphics)
 	webGdiRegisterUpdateCallbacks(update)
+	// C.pointer_cache_register_callbacks(update)
+	C.glyph_cache_register_callbacks(update)
+	C.brush_cache_register_callbacks(update)
+	C.bitmap_cache_register_callbacks(update)
+	C.offscreen_cache_register_callbacks(update)
+	C.palette_cache_register_callbacks(update)
+	log.Println("web_post_connect end")
 	return C.TRUE
 }
 
@@ -184,7 +230,7 @@ func webfreerdp_client_global_uninit() {
 //export webfreerdp_client_new
 func webfreerdp_client_new(instance *C.freerdp, context *C.rdpContext) C.BOOL {
 	log.Println("webfreerdp_client_new")
-	C.setFuncInClient(instance)
+	C.setFuncInClient(instance, context)
 	return C.TRUE
 }
 
@@ -196,8 +242,9 @@ func webfreerdp_client_free(instance *C.freerdp, context *C.rdpContext) {
 //export webfreerdp_client_start
 func webfreerdp_client_start(context *C.rdpContext) C.int {
 	log.Println("webfreerdp_client_start")
-	status := C.freerdp_connect(context.instance)
-	log.Printf("status:%d", status)
+	var instance *C.freerdp
+	instance = context.instance
+	C.web_client_func(instance)
 	return 0
 }
 

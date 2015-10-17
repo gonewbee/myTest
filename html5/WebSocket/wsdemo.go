@@ -24,7 +24,8 @@ func wsWorker(ws *websocket.Conn, msg chan<- string, wsClosed chan<- bool) {
 	log.Println("wsWorker end=========")
 }
 
-func testWorker(msg chan<- string, quit <-chan bool) {
+// 在Channel send阻塞的情况下，可使用超时退出Goroutine
+func testWorker(msg chan<- string) {
 	i := 0
 	for {
 		select {
@@ -32,25 +33,22 @@ func testWorker(msg chan<- string, quit <-chan bool) {
 			log.Printf("testWorker:%d", i)
 			time.Sleep(5 * time.Second)
 			i = (i + 1) % 16
-		case <-quit:
-			// 退出测试Goroutine
-			log.Println("testWorker return---------------")
+		case <-time.After(time.Second * 15):
+			// Channel发送超时，退出Goroutine
+			log.Println("testWorker timeout, return-------")
 			return
-		default:
-			log.Println("testWorker default!!!")
 		}
 	}
 	log.Println("testWorker end============")
 }
 
 func wsHandler(ws *websocket.Conn) {
-	c1 := make(chan string)
-	c2 := make(chan string)
+	c1 := make(chan string)    // 相当于make(chan string, 1)
+	c2 := make(chan string, 5) // 相当于消息队列中的最大消息数目
 	wsClosed := make(chan bool)
-	quit := make(chan bool)
 
 	go wsWorker(ws, c1, wsClosed)
-	go testWorker(c2, quit)
+	go testWorker(c2)
 
 forLoop:
 	for {
@@ -70,7 +68,6 @@ forLoop:
 			log.Println("c2 receive:" + msg2)
 			websocket.Message.Send(ws, msg2)
 		case <-wsClosed:
-			quit <- true
 			log.Printf("wsClosed")
 			break forLoop
 		}

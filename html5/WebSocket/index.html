@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket示例</title>
+</head>
+<body>
+<canvas id="content" height="200" widht="300"></canvas>
+
+<script type="text/javascript">
+  var canvas=document.getElementById('content');
+  var wsServer = 'ws://localhost/wsDemo';
+  var websocket = new WebSocket(wsServer);
+  websocket.onopen = function() {
+    console.log("Connected to WebSocket server");
+    websocket.send("hello");
+  };
+  websocket.onclose = function (evt) { 
+    console.log("Disconnected!");
+  }; 
+  websocket.onmessage = function(evt) {
+    console.log('Retrieved data from server: ' + evt.data);
+  };
+  websocket.onerror = function (evt) { 
+    console.log('Error occured: ' + evt.data); 
+  };
+
+  var ctx=canvas.getContext('2d');
+  ctx.fillStyle='#FF0000';
+  ctx.fillRect(0,0,80,100);
+</script>
+</body>
+</html>

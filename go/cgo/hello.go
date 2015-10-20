@@ -52,10 +52,18 @@ func mydivide(a, b C.int) C.int {
 // 在C中使用void*保存*chan int进行chan传递
 func testWorker(o *C.Test_c) {
 	t := (*chan int)(o.num)
+	log.Printf("testWorker t:%p", t)
 	for i := 0; i < 16; i++ {
 		*t <- i * 10
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func newTest(obj *C.Test_c) {
+	num := make(chan int)
+	obj.id = C.int(10)
+	obj.num = unsafe.Pointer(&num)
+	log.Printf("newTest num:%p", &num)
 }
 
 func main() {
@@ -64,14 +72,14 @@ func main() {
 	var math C.mathOps
 	C.math_new(&math)
 	C.mathOps_test(&math)
-	num := make(chan int)
 	var obj C.Test_c
-	obj.id = C.int(10)
-	obj.num = unsafe.Pointer(&num)
+	newTest(&obj)
 	go testWorker(&obj)
+	tchan := (*chan int)(obj.num)
+	log.Printf("main tchan:%p", tchan)
 	for i := 0; i < 20; i++ {
 		select {
-		case t := <-num:
+		case t := <-(*tchan):
 			log.Println(t)
 		case <-time.After(time.Second * 4):
 			log.Println("time out")

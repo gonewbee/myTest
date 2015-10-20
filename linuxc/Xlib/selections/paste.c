@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <string.h>
 
 typedef struct _property {
 	unsigned char *data;
@@ -14,6 +15,12 @@ typedef struct _property {
 }Property;
 
 static Atom XA_TARGETS;
+
+static Atom to_be_requested;
+
+static Atom atoms[16];
+static int atomNum = 0;
+static int atomIndex = 0;
 
 static char* GetAtomName(Display* disp, Atom a) {
 	if(a == None)
@@ -62,6 +69,11 @@ static void list_targets_name(Display* disp, Property p) {
 	int i = 0;
 	for(i=0; i < p.nitems; i++) {
 		fprintf(stdout, "Type:%d = %s\n", i, GetAtomName(disp, atom_list[i]));
+		if (!strstr(GetAtomName(disp, atom_list[i]), "TARGETS")) {
+			fprintf(stdout, "set atoms[%d]\n", atomNum);
+			atoms[atomNum] = atom_list[i];
+			atomNum++;
+		}
 	}
 }
 
@@ -78,7 +90,6 @@ int main(int argc, char *argv[]) {
 	// 使用 CLIPBOARD 
 	Atom sel = XInternAtom(dis, "CLIPBOARD", False);
 	XA_TARGETS = XInternAtom(dis, "TARGETS", False);
-	Atom to_be_requested = None;
 
 	// 传入TARGETS，获取可用的类型列表
     // 使用XGetWindowProperty读取Property
@@ -87,13 +98,13 @@ int main(int argc, char *argv[]) {
 	while(1) {
         // SelectionNotify事件不需要使用XSelectInput进行设置
 		XNextEvent(dis, &event);
-		fprintf(stdout, "event type:%d\n", event.type);
+		fprintf(stdout, "-----event type:%d\n", event.type);
 		if(event.type == SelectionNotify) {
 			Atom target = event.xselection.target;
 			fprintf(stdout, "A selection notify has arrived!\n");
 			fprintf(stdout, "Requestor = 0x%x\n", (int)event.xselectionrequest.requestor);
 			fprintf(stdout, "Selection atom = %s\n", GetAtomName(dis, event.xselection.selection));
-			fprintf(stdout, "Target atom    = %s\n", GetAtomName(dis, target));
+			fprintf(stdout, "-----------Target atom    = %s\n", GetAtomName(dis, target));
 			fprintf(stdout, "Property atom  = %s\n", GetAtomName(dis, event.xselection.property));
 
 			if(event.xselection.property == None) {
@@ -104,13 +115,26 @@ int main(int argc, char *argv[]) {
 					sent_request = 1;
 					list_targets_name(dis, prop);
 					// 从selection中获取XA_STRING类型
-					to_be_requested = XA_STRING;
-					fprintf(stdout, "Now requsting type %s\n", GetAtomName(dis, to_be_requested));
+					// to_be_requested = XA_STRING;
 					// 设置要获取类型的数
-					XConvertSelection(dis, sel, to_be_requested, sel, win, CurrentTime);
+					// XConvertSelection(dis, sel, to_be_requested, sel, win, CurrentTime);
+					if (atomIndex<atomNum) {
+						to_be_requested = atoms[atomIndex];
+						XConvertSelection(dis, sel, to_be_requested, sel, win, CurrentTime);
+						atomIndex++;
+					} else {
+						return 0;
+					}
 				} else if(target == to_be_requested) {
+					fprintf(stdout, "=================\n");
 					fprintf(stdout, "%s\n", (char*)prop.data);
-					return 0;
+					if (atomIndex<atomNum) {
+						to_be_requested = atoms[atomIndex];
+						XConvertSelection(dis, sel, to_be_requested, sel, win, CurrentTime);
+						atomIndex++;
+					} else {
+						return 0;
+					}
 				}
 			}
 		}

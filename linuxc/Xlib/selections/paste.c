@@ -69,7 +69,7 @@ static void list_targets_name(Display* disp, Property p) {
 	int i = 0;
 	for(i=0; i < p.nitems; i++) {
 		fprintf(stdout, "Type:%d = %s\n", i, GetAtomName(disp, atom_list[i]));
-		if (!strstr(GetAtomName(disp, atom_list[i]), "TARGETS")) {
+		if (!strstr(GetAtomName(disp, atom_list[i]), "TARGETS") && !strstr(GetAtomName(disp, atom_list[i]), "TIMESTAMP")) {
 			fprintf(stdout, "set atoms[%d]\n", atomNum);
 			atoms[atomNum] = atom_list[i];
 			atomNum++;

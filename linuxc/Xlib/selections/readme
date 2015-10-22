@@ -1,0 +1,2 @@
+## 将剪切板中image/bmp类型数据保存到文件中
+xclip -selection c -t image/bmp -o > test.bmp

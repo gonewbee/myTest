@@ -16,6 +16,8 @@ type mousePos struct {
 
 func wsWorker(ws *websocket.Conn, msg chan<- string, wsClosed chan<- bool) {
 	var message string
+	data := []byte{0, 1, 2}
+	websocket.Message.Send(ws, data)
 	for nil == websocket.Message.Receive(ws, &message) {
 		log.Println("receive:" + message)
 		msg <- message

@@ -23,6 +23,7 @@
 <script type="text/javascript">
   var wsServer = 'ws://localhost/wsDemo';
   var websocket = new WebSocket(wsServer);
+  websocket.binaryType = 'arraybuffer';
   websocket.onopen = function() {
     console.log("Connected to WebSocket server");
   };
@@ -31,7 +32,13 @@
   }; 
   websocket.onmessage = function(evt) {
     console.log('Retrieved data from server: ' + evt.data);
-    drawRect(evt.data);
+    if (evt.data instanceof ArrayBuffer) {
+      console.log("ArrayBuffer!!!");
+      var bytes = new Uint8Array(evt.data);
+      console.log(bytes);
+    } else {
+      drawRect(evt.data);
+    }
   };
   websocket.onerror = function (evt) { 
     console.log('Error occured: ' + evt.data); 

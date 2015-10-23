@@ -45,7 +45,10 @@ int main(int argc, char *argv[]) {
 		        udev_device_get_sysattr_value(dev, "idProduct"));
 		fprintf(stdout, "  %s  %s\n",
 		        udev_device_get_sysattr_value(dev,"manufacturer"),
-		        udev_device_get_sysattr_value(dev,"product"));
+		        udev_device_get_sysattr_value(dev,"product")); 
+		fprintf(stdout, "bDeviceClass  %s %s\n",
+		        udev_device_get_sysattr_value(dev,"bDeviceClass"),
+		        udev_device_get_sysattr_value(dev,"bNumInterfaces"));
 		udev_device_unref(dev);
 	}
 	udev_enumerate_unref(enumerate);

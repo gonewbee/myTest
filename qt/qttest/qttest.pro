@@ -23,3 +23,6 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     logindialog.ui
+
+RESOURCES += \
+    img.qrc

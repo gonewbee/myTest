@@ -2,15 +2,15 @@
 #include "logindialog.h"
 #include <QApplication>
 #include <QIcon>
+#include <QSystemTrayIcon>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
-#if true
-    QIcon icon = QIcon(":/img/test.png");
-    qDebug() << icon.isNull();
-    a.setWindowIcon(icon);
+    QSystemTrayIcon *trayIcon = new QSystemTrayIcon();
+    trayIcon->setIcon(QIcon(":/img/test.png"));
+    trayIcon->show();
     LoginDialog loginDialog;
     if (loginDialog.exec()==LoginDialog::Accepted) {
         w.show();
@@ -18,8 +18,4 @@ int main(int argc, char *argv[])
     } else {
         return 0;
     }
-#else
-    w.show();
-    return a.exec();
-#endif
 }

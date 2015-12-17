@@ -1,10 +1,34 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net"
 )
+
+func transferTCP(src net.Conn, dst net.Conn) {
+	log.Println("transferTCP in")
+	buf := make([]byte, 10*1024)
+	for {
+		nr, er := src.Read(buf)
+		if er != nil {
+			log.Println(er)
+			break
+		}
+		if nr > 0 {
+			// log.Println(nr)
+			nw, ew := dst.Write(buf[0:nr])
+			if ew != nil {
+				log.Println(ew)
+				break
+			}
+			if nr != nw {
+				log.Println("write!=read!")
+				break
+			}
+		}
+	}
+	log.Println("transferTCP end")
+}
 
 func handleTCPProxy(conn net.Conn, rAddr *net.TCPAddr) {
 	log.Println("enter connection")
@@ -14,8 +38,8 @@ func handleTCPProxy(conn net.Conn, rAddr *net.TCPAddr) {
 		panic(err)
 	}
 	defer rConn.Close()
-	go io.Copy(conn, rConn)
-	io.Copy(rConn, conn)
+	go transferTCP(conn, rConn)
+	transferTCP(rConn, conn)
 	log.Println("connection end")
 }
 

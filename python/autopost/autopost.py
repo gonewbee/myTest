@@ -1,3 +1,4 @@
+#coding=utf-8
 import requests
 from lxml import etree
 import config
@@ -36,23 +37,36 @@ def myLogin():
     resp = session.get(login, headers=headers)
     print(resp.encoding, resp.status_code)
     page = etree.HTML(resp.text)
-    LastToken = page.xpath("//input[@id='__LastToken']")[0].attrib['value']
-    ZIPSTATE = page.xpath("//input[@id='__ZIPSTATE']")[0].attrib['value']
-    print('LastToken:%s ZIPSTATE:%s' % (LastToken, ZIPSTATE))
-    payload = {'__LastToken':LastToken,
-               '__ZIPSTATE':ZIPSTATE,
-               '__VIEWSTATE':'',
-               'btnLogin':'',
-               'txtUser':config.user,
-               'txtPassword':config.passwd}
+    form = page.find(".//form[@name='form1']")
+    payload = {}
+    inputs = form.xpath("//input")
+    for input in inputs:
+        if 'name' in input.attrib:
+            if 'value' in input.attrib:
+                payload[input.attrib['name']] = input.attrib['value']
+            else:
+                payload[input.attrib['name']] = ''
+    payload['txtUser'] = config.user
+    payload['txtPassword'] = config.passwd
+    print(payload)
     resp = session.post(login, headers=headers, data=payload)
     print(session.cookies)
+    return session
+
+def getDayly(session):
     daylylist = 'http://'+config.hostname+'/daylylist.aspx'
+    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.81 Safari/537.36'}
     resp = session.get(daylylist, headers=headers)
-    with open('daylyout.html', 'w') as fo:
-        fo.write(resp.text.encode('utf-8'))
-    print('myLogin end')
+    # with open('daylyout.html', 'w') as fo:
+    #     fo.write(resp.text.encode('utf-8'))
+    # page = etree.HTML(resp.text)
+    # jihuar = page.xpath("//input[@id='jihuanr']")[0].attrib['value']
+    # wanchengzj = page.xpath("//input[@id='wanchengzj']")[0].attrib['value']
+    # print(jihuar)
+    # print(wanchengzj)
+    print('getDayly end')
 
 if __name__=='__main__':
     # myLoginTest()
-    myLogin()
+    session = myLogin()
+    getDayly(session)

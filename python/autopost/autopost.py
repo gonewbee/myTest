@@ -1,5 +1,6 @@
 #coding=utf-8
 import requests
+import time
 from lxml import etree
 import config
 
@@ -34,6 +35,9 @@ def myLogin():
     headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.81 Safari/537.36'}
     print(login)
     session = requests.Session()
+    # proxies = {'http':'127.0.0.1:8888'}
+    # 使用代理
+    # resp = session.get(login, headers=headers, proxies=proxies)
     resp = session.get(login, headers=headers)
     print(resp.encoding, resp.status_code)
     page = etree.HTML(resp.text)

@@ -5,6 +5,7 @@ class UF():
     
     def __init__(self, N):
         # 集合数量
+        print('UF init----')
         self.count = N
         self.id = list(range(N))
     

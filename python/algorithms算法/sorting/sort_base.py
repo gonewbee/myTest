@@ -32,7 +32,9 @@ class SortBase:
 
     @classmethod
     def test(cls, filename):
-        """测试排序函数，可用测试algs4-data下文件：
+        """
+        使用classmethod可以利用传入的cls调用对应的staticmethod
+        测试排序函数，可用测试algs4-data下文件：
         tiny.txt words3.txt
         """
         with open(filename, 'r') as fi:

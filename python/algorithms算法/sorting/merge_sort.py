@@ -6,6 +6,9 @@ class MergeSort(SortBase):
 
     @classmethod
     def merge(cls, a, lo, mid, hi):
+        if a[mid] <= a[mid+1]:
+            # 如果已经有序了就不用在进行数组copy
+            return
         i = lo
         j = mid + 1
         aux = cls.aux

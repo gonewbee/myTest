@@ -1,10 +1,10 @@
 class SortBase:
     """docstring for SortBase"""
-    
+
     @staticmethod
     def sort(a):
-        raise NotImplementedError( "Should have implemented this" )
-        
+        raise NotImplementedError("Should have implemented this")
+
     @staticmethod
     def less(v, w):
         # python3中没有cmp函数了
@@ -26,7 +26,7 @@ class SortBase:
     @staticmethod
     def isSorted(a):
         for i in range(1, len(a)):
-            if SortBase.less(a[i], a[i-1]):
+            if SortBase.less(a[i], a[i - 1]):
                 return False
         return True
 
@@ -45,5 +45,3 @@ class SortBase:
             # assert断言
             assert cls.isSorted(a)
             cls.show(a)
-
-

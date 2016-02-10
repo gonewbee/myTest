@@ -1,0 +1,51 @@
+TCP    0.0.0.0:80             0.0.0.0:0              LISTENING
+TCP    0.0.0.0:135            0.0.0.0:0              LISTENING
+TCP    0.0.0.0:443            0.0.0.0:0              LISTENING
+TCP    0.0.0.0:445            0.0.0.0:0              LISTENING
+TCP    0.0.0.0:3389           0.0.0.0:0              LISTENING
+TCP    0.0.0.0:7170           0.0.0.0:0              LISTENING
+TCP    0.0.0.0:7171           0.0.0.0:0              LISTENING
+TCP    0.0.0.0:7172           0.0.0.0:0              LISTENING
+TCP    0.0.0.0:9202           0.0.0.0:0              LISTENING
+TCP    0.0.0.0:47001          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49152          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49153          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49154          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49155          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49156          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49157          0.0.0.0:0              LISTENING
+TCP    0.0.0.0:49158          0.0.0.0:0              LISTENING
+TCP    127.0.0.1:9202         127.0.0.1:49318        ESTABLISHED
+TCP    127.0.0.1:49318        127.0.0.1:9202         ESTABLISHED
+TCP    192.168.1.204:139      0.0.0.0:0              LISTENING
+TCP    192.168.1.204:445      192.168.1.109:34927    ESTABLISHED
+TCP    192.168.1.204:7170     192.168.1.202:57147    ESTABLISHED
+TCP    192.168.1.204:7171     192.168.1.204:49317    ESTABLISHED
+TCP    192.168.1.204:7172     192.168.1.202:49818    ESTABLISHED
+TCP    192.168.1.204:49317    192.168.1.204:7171     ESTABLISHED
+TCP    [::]:80                [::]:0                 LISTENING
+TCP    [::]:135               [::]:0                 LISTENING
+TCP    [::]:443               [::]:0                 LISTENING
+TCP    [::]:445               [::]:0                 LISTENING
+TCP    [::]:3389              [::]:0                 LISTENING
+TCP    [::]:7171              [::]:0                 LISTENING
+TCP    [::]:47001             [::]:0                 LISTENING
+TCP    [::]:49152             [::]:0                 LISTENING
+TCP    [::]:49153             [::]:0                 LISTENING
+TCP    [::]:49154             [::]:0                 LISTENING
+TCP    [::]:49155             [::]:0                 LISTENING
+TCP    [::]:49156             [::]:0                 LISTENING
+TCP    [::]:49157             [::]:0                 LISTENING
+TCP    [::]:49158             [::]:0                 LISTENING
+UDP    0.0.0.0:123            *:*
+UDP    0.0.0.0:500            *:*
+UDP    0.0.0.0:4500           *:*
+UDP    0.0.0.0:5355           *:*
+UDP    0.0.0.0:51718          *:*
+UDP    127.0.0.1:7172         *:*
+UDP    192.168.1.204:137      *:*
+UDP    192.168.1.204:138      *:*
+UDP    [::]:123               *:*
+UDP    [::]:500               *:*
+UDP    [::]:4500              *:*
+UDP    [::]:5355              *:*

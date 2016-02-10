@@ -1,0 +1,47 @@
+﻿Process	CPU	Private Bytes	Working Set	PID	Description	Company Name
+System Idle Process	98.99	 K	24 K	0		
+System	0.07	112 K	368 K	4		
+ Interrupts	0.35	 K	 K	n/a	Hardware Interrupts and DPCs	
+ smss.exe		476 K	1,116 K	236	Windows 会话管理器	Microsoft Corporation
+csrss.exe	< 0.01	2,236 K	6,196 K	308	Client Server Runtime Process	Microsoft Corporation
+csrss.exe	0.23	2,608 K	11,596 K	360	Client Server Runtime Process	Microsoft Corporation
+ conhost.exe	< 0.01	1,588 K	5,040 K	2244	控制台窗口主机	Microsoft Corporation
+wininit.exe		1,556 K	4,872 K	368	Windows 启动应用程序	Microsoft Corporation
+ services.exe		4,832 K	10,764 K	460	服务和控制器应用程序	Microsoft Corporation
+  svchost.exe		3,760 K	9,304 K	572	Windows 服务主进程	Microsoft Corporation
+   WmiPrvSE.exe		2,464 K	6,044 K	1832	WMI Provider Host	Microsoft Corporation
+   WmiPrvSE.exe		3,152 K	7,208 K	764	WMI Provider Host	Microsoft Corporation
+  svchost.exe		4,360 K	8,768 K	644	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		14,408 K	15,292 K	740	Windows 服务主进程	Microsoft Corporation
+  svchost.exe	< 0.01	22,212 K	36,480 K	784	Windows 服务主进程	Microsoft Corporation
+  svchost.exe	< 0.01	7,060 K	14,784 K	832	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		4,316 K	11,692 K	892	Windows 服务主进程	Microsoft Corporation
+   dwm.exe		1,444 K	4,544 K	2196	桌面窗口管理器	Microsoft Corporation
+  svchost.exe	< 0.01	11,548 K	15,332 K	932	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		1,824 K	5,548 K	312	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		8,648 K	11,572 K	292	Windows 服务主进程	Microsoft Corporation
+  spoolsv.exe		5,912 K	11,516 K	1060	后台处理程序子系统应用程序	Microsoft Corporation
+  svchost.exe		4,408 K	8,900 K	1104	Windows 服务主进程	Microsoft Corporation
+  inetinfo.exe		6,464 K	13,060 K	1128	Internet Information Services	Microsoft Corporation
+  svchost.exe		952 K	2,808 K	1216	Windows 服务主进程	Microsoft Corporation
+  SRAPSrv.exe	< 0.01	5,944 K	5,380 K	1244	SRAP 服务主进程	Sangfor
+  svchost.exe	< 0.01	4,352 K	10,924 K	1328	Windows 服务主进程	Microsoft Corporation
+  svchost.exe	< 0.01	9,008 K	13,156 K	1352	Windows 服务主进程	Microsoft Corporation
+  SfUSBIsolater.exe		5,700 K	9,100 K	1376		
+  svchost.exe		5,908 K	9,932 K	1424	Windows 服务主进程	Microsoft Corporation
+  SfRemoteAppAgent.exe	0.02	9,248 K	15,888 K	1464	Sangfor RemoteApp Agent Service	Sangfor
+  SfRemoteAppMonitor.exe	< 0.01	1,492 K	3,880 K	1572	Sangfor RemoteApp Monitor Service	Sangfor
+  svchost.exe		1,972 K	5,876 K	1996	Windows 服务主进程	Microsoft Corporation
+  taskhost.exe	< 0.01	2,400 K	6,800 K	1720	Windows 任务的主机进程	Microsoft Corporation
+  SfLogService.exe	< 0.01	1,024 K	3,420 K	2372	LogService	Sangfor Technologies
+  msdtc.exe		3,344 K	7,500 K	2448	Microsoft 分布式事务处理协调器服务	Microsoft Corporation
+  svchost.exe	< 0.01	154,744 K	45,692 K	2072	Windows 服务主进程	Microsoft Corporation
+ lsass.exe	0.01	4,980 K	11,604 K	468	Local Security Authority Process	Microsoft Corporation
+ lsm.exe	< 0.01	3,368 K	6,624 K	476	本地会话管理器服务	Microsoft Corporation
+winlogon.exe		1,968 K	5,896 K	396	Windows 登录应用程序	Microsoft Corporation
+explorer.exe	0.03	34,104 K	55,388 K	2260	Windows 资源管理器	Microsoft Corporation
+ cmd.exe		2,120 K	3,264 K	992	Windows 命令处理程序	Microsoft Corporation
+ notepad.exe		1,532 K	5,816 K	2756	记事本	Microsoft Corporation
+ procexp.exe		2,152 K	7,240 K	3592	Sysinternals Process Explorer	Sysinternals - www.sysinternals.com
+  procexp64.exe	0.29	19,356 K	37,492 K	2692	Sysinternals Process Explorer	Sysinternals - www.sysinternals.com
+

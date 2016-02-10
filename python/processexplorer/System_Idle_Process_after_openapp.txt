@@ -1,0 +1,57 @@
+﻿Process	CPU	Private Bytes	Working Set	PID	Description	Company Name
+System Idle Process	98.99	 K	24 K	0		
+System	0.02	112 K	368 K	4		
+ Interrupts	0.37	 K	 K	n/a	Hardware Interrupts and DPCs	
+ smss.exe		476 K	1,120 K	236	Windows 会话管理器	Microsoft Corporation
+csrss.exe	< 0.01	2,236 K	6,196 K	308	Client Server Runtime Process	Microsoft Corporation
+csrss.exe	0.23	2,608 K	11,760 K	360	Client Server Runtime Process	Microsoft Corporation
+ conhost.exe	< 0.01	1,588 K	5,040 K	2244	控制台窗口主机	Microsoft Corporation
+wininit.exe		1,556 K	4,872 K	368	Windows 启动应用程序	Microsoft Corporation
+ services.exe		5,056 K	10,864 K	460	服务和控制器应用程序	Microsoft Corporation
+  svchost.exe		3,760 K	9,308 K	572	Windows 服务主进程	Microsoft Corporation
+   WmiPrvSE.exe		2,452 K	6,112 K	1832	WMI Provider Host	Microsoft Corporation
+  svchost.exe		4,392 K	8,784 K	644	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		14,676 K	15,604 K	740	Windows 服务主进程	Microsoft Corporation
+  svchost.exe	< 0.01	22,352 K	36,656 K	784	Windows 服务主进程	Microsoft Corporation
+  svchost.exe	< 0.01	7,236 K	14,868 K	832	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		4,516 K	11,900 K	892	Windows 服务主进程	Microsoft Corporation
+   dwm.exe		1,444 K	4,544 K	2196	桌面窗口管理器	Microsoft Corporation
+   dwm.exe		1,564 K	4,428 K	3540	桌面窗口管理器	Microsoft Corporation
+  svchost.exe	< 0.01	11,592 K	15,316 K	932	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		1,824 K	5,548 K	312	Windows 服务主进程	Microsoft Corporation
+  svchost.exe		8,648 K	11,572 K	292	Windows 服务主进程	Microsoft Corporation
+  spoolsv.exe		6,084 K	11,596 K	1060	后台处理程序子系统应用程序	Microsoft Corporation
+  svchost.exe		4,460 K	8,920 K	1104	Windows 服务主进程	Microsoft Corporation
+  inetinfo.exe		6,464 K	13,064 K	1128	Internet Information Services	Microsoft Corporation
+  svchost.exe		952 K	2,808 K	1216	Windows 服务主进程	Microsoft Corporation
+  SRAPSrv.exe	0.01	5,944 K	5,380 K	1244	SRAP 服务主进程	Sangfor
+   SRAPWorker.exe	0.01	13,588 K	11,772 K	1948		
+  svchost.exe	< 0.01	4,608 K	11,120 K	1328	Windows 服务主进程	Microsoft Corporation
+   rdpclip.exe		1,892 K	4,988 K	3664	RDP Clip 监视程序	Microsoft Corporation
+  svchost.exe	< 0.01	9,008 K	13,160 K	1352	Windows 服务主进程	Microsoft Corporation
+  SfUSBIsolater.exe		5,756 K	9,128 K	1376		
+  svchost.exe		5,908 K	9,932 K	1424	Windows 服务主进程	Microsoft Corporation
+  SfRemoteAppAgent.exe	0.01	9,276 K	15,900 K	1464	Sangfor RemoteApp Agent Service	Sangfor
+   SfRemoteAppInit.exe	< 0.01	2,500 K	7,004 K	3044		
+    rundll32.exe		1,148 K	3,824 K	3840	Windows 主进程 (Rundll32)	Microsoft Corporation
+     rundll32.exe	0.02	1,128 K	3,152 K	2900	Windows 主进程 (Rundll32)	Microsoft Corporation
+   SfRemoteAppInitx64.exe		1,700 K	4,568 K	4020		
+  SfRemoteAppMonitor.exe	< 0.01	1,492 K	3,880 K	1572	Sangfor RemoteApp Monitor Service	Sangfor
+  svchost.exe		1,972 K	5,876 K	1996	Windows 服务主进程	Microsoft Corporation
+  taskhost.exe		2,400 K	6,800 K	1720	Windows 任务的主机进程	Microsoft Corporation
+  SfLogService.exe	0.03	1,024 K	3,420 K	2372	LogService	Sangfor Technologies
+  msdtc.exe		3,344 K	7,500 K	2448	Microsoft 分布式事务处理协调器服务	Microsoft Corporation
+  svchost.exe	< 0.01	155,376 K	47,568 K	2072	Windows 服务主进程	Microsoft Corporation
+  taskhost.exe		2,704 K	6,844 K	588	Windows 任务的主机进程	Microsoft Corporation
+ lsass.exe	0.01	4,984 K	11,596 K	468	Local Security Authority Process	Microsoft Corporation
+ lsm.exe	< 0.01	3,704 K	6,708 K	476	本地会话管理器服务	Microsoft Corporation
+winlogon.exe		1,968 K	5,896 K	396	Windows 登录应用程序	Microsoft Corporation
+explorer.exe	0.04	33,892 K	55,408 K	2260	Windows 资源管理器	Microsoft Corporation
+ cmd.exe		2,120 K	3,264 K	992	Windows 命令处理程序	Microsoft Corporation
+ procexp.exe		2,152 K	7,240 K	3592	Sysinternals Process Explorer	Sysinternals - www.sysinternals.com
+  procexp64.exe	0.21	19,664 K	38,360 K	2692	Sysinternals Process Explorer	Sysinternals - www.sysinternals.com
+csrss.exe	< 0.01	2,044 K	10,192 K	3804	Client Server Runtime Process	Microsoft Corporation
+winlogon.exe		2,232 K	5,860 K	3820	Windows 登录应用程序	Microsoft Corporation
+SfRemoteAppShell.exe	0.02	3,228 K	9,316 K	3120		
+wordpad.exe		8,916 K	23,372 K	3692	Windows 写字板应用程序	Microsoft Corporation
+

@@ -13,3 +13,13 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
 
 ### 通过.in配置生成对于文件
 在CMakeLists.txt中使用configure_file进行配置
+
+### 使用第三方动态库
+
+```sh
+LINK_DIRECTORIES(/home/zsy/Workspace/down/FreeRDP/out/usr/local/lib/x86_64-linux-gnu)
+
+add_executable(AgentRDP ${SOURCE_FILES})
+target_link_libraries(AgentRDP freerdp-client)
+```
+

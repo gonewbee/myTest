@@ -9,6 +9,8 @@
 
 typedef struct agent_context {
     rdpContext context;
+    BOOL disconnect;
+    HANDLE capture_thread;
 } agentContext;
 
 #endif //AGENTRDP_AGENTRDP_H_H

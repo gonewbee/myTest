@@ -8,5 +8,6 @@
 #include "freerdp/freerdp.h"
 
 int RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints);
+int agent_start_capture(rdpContext* context);
 
 #endif //AGENTRDP_AGENT_CLIENT_H

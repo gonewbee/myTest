@@ -2,6 +2,7 @@
 // Created by zsy on 2/24/16.
 //
 
+#include <unistd.h>
 #include "agent_client.h"
 #include "agentrdp.h"
 #include "freerdp/client/channels.h"
@@ -17,7 +18,7 @@ static BOOL agent_begin_paint(rdpContext* context) {
 }
 
 static BOOL agent_end_paint(rdpContext* context) {
-    fprintf(stdout, "%s enter!\n", __func__);
+//    fprintf(stdout, "%s enter!\n", __func__);
     return TRUE;
 }
 
@@ -101,25 +102,29 @@ static void agent_post_disconnect(freerdp* instance) {
 }
 
 static BOOL agent_authenticate(freerdp* instance, char** username, char** password, char** domain) {
+    fprintf(stdout, "%s enter!\n", __func__);
     return TRUE;
 }
 
 static BOOL agent_verify_certificate(freerdp* instance, char* subject, char* issuer, char* fingerprint) {
+    fprintf(stdout, "%s enter!\n", __func__);
     return TRUE;
 }
 
 static BOOL agent_verify_changed_certificate(freerdp* instance, char* subject, char* issuer,
                                                char* new_fingerprint, char* old_subject, char* old_issuer, char* old_fingerprint) {
+    fprintf(stdout, "%s enter!\n", __func__);
     return TRUE;
 }
 
 
 static BOOL agent_client_global_init() {
+    fprintf(stdout, "%s enter!\n", __func__);
     return TRUE;
 }
 
 static void agent_client_global_uninit() {
-
+    fprintf(stdout, "%s enter!\n", __func__);
 }
 
 static BOOL agent_client_new(freerdp* instance, rdpContext* context) {
@@ -144,7 +149,49 @@ static void agent_client_free(freerdp* instance, rdpContext* context) {
 }
 
 static int agent_client_start(rdpContext* context) {
+    BOOL status;
+    DWORD nCount;
+    DWORD waitStatus;
+    HANDLE handles[64];
+    agentContext* xfc;
+    freerdp* instance;
+
+    instance = context->instance;
+    context = instance->context;
+
     fprintf(stdout, "%s enter!\n", __func__);
+
+    status = freerdp_connect(instance);
+    if (!status) {
+        fprintf(stderr, "freerdp_connect error!!\n");
+        return 1;
+    }
+
+    xfc = (agentContext*) instance->context;
+    while (!xfc->disconnect && !freerdp_shall_disconnect(instance)) {
+        nCount = 0;
+        DWORD tmp = freerdp_get_event_handles(context, &handles[nCount], 64 - nCount);
+        if (tmp == 0)
+        {
+            fprintf(stderr, "freerdp_get_event_handles failed\n");
+            break;
+        }
+        nCount += tmp;
+
+        waitStatus = WaitForMultipleObjects(nCount, handles, FALSE, 100);
+        if (waitStatus!=0 && waitStatus!=258) {
+            fprintf(stdout, "waitStatus:%d\n", waitStatus);
+        }
+
+        if (!freerdp_check_event_handles(context))
+        {
+            fprintf(stderr, "Failed to check FreeRDP file descriptor\n");
+            break;
+        }
+    }
+    fprintf(stdout, "web_client_func==========end\n");
+    freerdp_disconnect(instance);
+
     return 0;
 }
 
@@ -167,3 +214,24 @@ int RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints)
     return 0;
 }
 
+void* agent_capture_gdi_thread(void* param) {
+    freerdp* instance;
+    instance = (freerdp*) param;
+    sleep(3);
+    rdpGdi *gdi = instance->context->gdi;
+    while (1) {
+        fprintf(stdout, "%d %d %d\n", gdi->width, gdi->height, gdi->bytesPerPixel);
+        sleep(1);
+    }
+}
+
+int agent_start_capture(rdpContext* context) {
+    agentContext* xfc = (agentContext*) context;
+    if (!(xfc->capture_thread = CreateThread(NULL, 0,
+                                     (LPTHREAD_START_ROUTINE) agent_capture_gdi_thread,
+                                     context->instance, 0, NULL))) {
+        fprintf(stderr, "failed to create client thread");
+        return -1;
+    }
+    return 0;
+}

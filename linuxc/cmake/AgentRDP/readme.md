@@ -11,3 +11,5 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
 ```
 然后重命名main.cpp为main.c
 
+### 通过.in配置生成对于文件
+在CMakeLists.txt中使用configure_file进行配置

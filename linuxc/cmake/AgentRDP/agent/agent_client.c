@@ -214,6 +214,25 @@ int RdpClientEntry(RDP_CLIENT_ENTRY_POINTS* pEntryPoints)
     return 0;
 }
 
+/**
+ * @breif 将gdi中的像素数据保存到文件
+ */
+void save2file(rdpGdi *gdi) {
+    static int saveNum = 0;
+    char name[64] = {0};
+    int size = gdi->width*gdi->height*gdi->bytesPerPixel;
+    snprintf(name, 63, "%u_%u_%u_%u.rgb565", gdi->width, gdi->height, gdi->bytesPerPixel, saveNum);
+    fprintf(stdout, "filename:%s size:%d\n", name, size);
+    saveNum += 1;
+    FILE *f = fopen(name, "w");
+    if (!f) {
+        perror("fopen");
+        return;
+    }
+    fwrite(gdi->primary_buffer, 1, size, f);
+    fclose(f);
+}
+
 void* agent_capture_gdi_thread(void* param) {
     freerdp* instance;
     instance = (freerdp*) param;
@@ -221,6 +240,7 @@ void* agent_capture_gdi_thread(void* param) {
     rdpGdi *gdi = instance->context->gdi;
     while (1) {
         fprintf(stdout, "%d %d %d\n", gdi->width, gdi->height, gdi->bytesPerPixel);
+        save2file(gdi);
         sleep(1);
     }
 }

@@ -246,11 +246,11 @@ void* agent_capture_gdi_thread(void* param) {
             1024, 768, // out size
             2000000
     );
-    FILE *f = fopen("test.mpeg", "w");
+    FILE *f = fopen("test.h264", "w");
     while (1) {
         fprintf(stdout, "%d %d %d\n", gdi->width, gdi->height, gdi->bytesPerPixel);
 //        save2file(gdi);
-        usleep(100*1000);
+        usleep(33*1000);
         encoded_size = APP_FRAME_BUFFER_SIZE - sizeof(jsmpeg_frame_t);
         encoder_encode(encoder, gdi->primary_buffer, frame->data, &encoded_size);
         fprintf(stdout, "encoded_size:%d\n", (int)encoded_size);

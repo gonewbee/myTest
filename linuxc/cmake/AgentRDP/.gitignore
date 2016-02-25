@@ -6,3 +6,4 @@ cmake_install.cmake
 AgentRDP
 *.rgb565
 *.mpeg
+*.h264

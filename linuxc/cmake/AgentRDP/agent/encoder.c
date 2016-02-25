@@ -18,7 +18,8 @@ encoder_t *encoder_create(int in_width, int in_height, int out_width, int out_he
     self->out_height = out_height;
 
     avcodec_register_all();
-    self->codec = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
+//    self->codec = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
+    self->codec = avcodec_find_encoder(AV_CODEC_ID_H264);
 
     self->context = avcodec_alloc_context3(self->codec);
     self->context->dct_algo = FF_DCT_FASTINT;

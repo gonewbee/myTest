@@ -9,6 +9,7 @@
 #include "freerdp/client/cmdline.h"
 #include "freerdp/cache/cache.h"
 #include "freerdp/gdi/gdi.h"
+#include "encoder.h"
 
 static BOOL agent_begin_paint(rdpContext* context) {
     rdpGdi* gdi = context->gdi;
@@ -236,13 +237,27 @@ void save2file(rdpGdi *gdi) {
 void* agent_capture_gdi_thread(void* param) {
     freerdp* instance;
     instance = (freerdp*) param;
-    sleep(3);
+    jsmpeg_frame_t *frame = (jsmpeg_frame_t *)malloc(APP_FRAME_BUFFER_SIZE);
+    size_t encoded_size = APP_FRAME_BUFFER_SIZE - sizeof(jsmpeg_frame_t);
+    sleep(2);
     rdpGdi *gdi = instance->context->gdi;
+    encoder_t *encoder = encoder_create(
+            gdi->width, gdi->height, // in size
+            1024, 768, // out size
+            2000000
+    );
+    FILE *f = fopen("test.mpeg", "w");
     while (1) {
         fprintf(stdout, "%d %d %d\n", gdi->width, gdi->height, gdi->bytesPerPixel);
-        save2file(gdi);
-        sleep(1);
+//        save2file(gdi);
+        usleep(100*1000);
+        encoded_size = APP_FRAME_BUFFER_SIZE - sizeof(jsmpeg_frame_t);
+        encoder_encode(encoder, gdi->primary_buffer, frame->data, &encoded_size);
+        fprintf(stdout, "encoded_size:%d\n", (int)encoded_size);
+        fwrite(frame->data, 1, encoded_size, f);
     }
+    fclose(f);
+    encoder_destroy(encoder);
 }
 
 int agent_start_capture(rdpContext* context) {

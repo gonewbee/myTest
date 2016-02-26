@@ -6,7 +6,7 @@ def check_arg(func):
         if not isinstance(l, list):
             raise Exception("l must be list")
         print(func.__name__ + " was called!")
-        func(l, *args)
+        return func(l, *args)
     return wrapper
 
 

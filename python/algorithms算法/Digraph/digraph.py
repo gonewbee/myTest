@@ -35,7 +35,7 @@ class Digraph():
     def reverse(self):
         r = Digraph(self.vs)
         for v in range(self.vs):
-            for w in range(self.adjs[v]):
+            for w in self.adjs[v]:
                 r.addEdge(w, v)
         return r
 

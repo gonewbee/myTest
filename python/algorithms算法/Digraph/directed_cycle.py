@@ -5,7 +5,7 @@ def check_G(func):
     def wrapper(self, G, *args):
         if not isinstance(G, Digraph):
             raise Exception("G must be Digraph!")
-        func(self, G, *args)
+        return func(self, G, *args)
     return wrapper
 
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         sys.exit(1)
     with open(sys.argv[1], 'r') as f:
         g = Digraph(f)
-        diCycle = DirectedCycle(f)
+        diCycle = DirectedCycle(g)
         if diCycle.hasCycle():
             print("Has cycle:", end=' ')
             print(diCycle.cycle())

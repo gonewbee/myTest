@@ -10,6 +10,10 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        ndk {
+            moduleName "gles2jni"
+            ldLibs "EGL", "GLESv2", "log"	   // Link with these libraries!
+        }
     }
     buildTypes {
         release {

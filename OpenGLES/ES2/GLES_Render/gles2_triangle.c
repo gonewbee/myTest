@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <GLES2/gl2.h>
 
 static GLuint programObject;

@@ -4,8 +4,13 @@ project(OpenGLES)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
-# 头文件目录
-include_directories(./Common)
+add_subdirectory(GLES_Render)
 
-add_subdirectory(Common)
-add_subdirectory(Hello_Triangle)
+include_directories(GLES_Render)
+
+if (ANDROID)
+    add_subdirectory(Android)
+else()
+    add_subdirectory(X11)
+endif ()
+

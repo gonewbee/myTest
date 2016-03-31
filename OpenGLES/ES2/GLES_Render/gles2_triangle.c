@@ -2,6 +2,8 @@
 #include <GLES2/gl2.h>
 
 static GLuint programObject;
+// position句柄
+static GLuint mPositionHandle;
 static int g_width;
 static int g_height;
 
@@ -76,8 +78,11 @@ int triangle_init() {
     glAttachShader ( programObject, vertexShader );
     glAttachShader ( programObject, fragmentShader );
 
-    // Bind vPosition to attribute 0   
-    glBindAttribLocation ( programObject, 0, "vPosition" );
+    mPositionHandle = 1;
+
+    // Bind vPosition to attribute mPositionHandle
+    // 绑定vPosition到mPositionHandle
+    glBindAttribLocation ( programObject, mPositionHandle, "vPosition" );
 
     // Link the program
     // 创建OpenGL ES的可执行程序
@@ -105,6 +110,8 @@ int triangle_draw() {
        -0.5f, -0.5f, 0.0f,  // bottom left
        0.5f, -0.5f, 0.0f    // bottom right
    };
+   // 顶点的坐标纬数，(x, y, z)坐标纬数为3
+   int coords_per_vertex = 3;
    // 计算顶点数目
    int vertexCount = sizeof(vVertices)/(sizeof(GLfloat)*3);
    // fprintf(stdout, "%s vertexCount:%d\n", __func__, vertexCount);
@@ -119,8 +126,8 @@ int triangle_draw() {
    glUseProgram ( programObject );
 
    // Load the vertex data
-   glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
-   glEnableVertexAttribArray ( 0 );
+   glVertexAttribPointer ( mPositionHandle, coords_per_vertex, GL_FLOAT, GL_FALSE, 0, vVertices );
+   glEnableVertexAttribArray ( mPositionHandle );
 
    glDrawArrays ( GL_TRIANGLES, 0, vertexCount );
 }

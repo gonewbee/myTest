@@ -2,8 +2,10 @@
 #include <GLES2/gl2.h>
 
 static GLuint programObject;
-// position句柄
+// 顶点着色器 vPosition句柄
 static GLuint mPositionHandle;
+// fragment着色器 vColor句柄
+static GLuint mColorHandle;
 static int g_width;
 static int g_height;
 
@@ -44,6 +46,7 @@ GLuint LoadShader ( GLenum type, const char *shaderSrc )
 }
 
 int triangle_init() {
+    // Vertex shader源码，设置坐标，对应attribute操作
     GLbyte vShaderStr[] =  
       "attribute vec4 vPosition;    \n"
       "void main()                  \n"
@@ -51,13 +54,14 @@ int triangle_init() {
       "   gl_Position = vPosition;  \n"
       "}                            \n";
    
-   // 颜色
+   // Fragment shader源码，设置颜色，对应uniform操作
    GLbyte fShaderStr[] =  
-      "precision mediump float;\n"\
-      "void main()                                  \n"
-      "{                                            \n"
-      "  gl_FragColor = vec4 ( 0.0, 1.0, 0.0, 1.0 );\n"
-      "}                                            \n";
+      "precision mediump float; \n"
+      "uniform vec4 vColor;     \n"
+      "void main()              \n"
+      "{                        \n"
+      "  gl_FragColor = vColor; \n"
+      "}                        \n";
 
     GLuint vertexShader;
     GLuint fragmentShader;
@@ -78,7 +82,7 @@ int triangle_init() {
     glAttachShader ( programObject, vertexShader );
     glAttachShader ( programObject, fragmentShader );
 
-    mPositionHandle = 1;
+    mPositionHandle = 0;
 
     // Bind vPosition to attribute mPositionHandle
     // 绑定vPosition到mPositionHandle
@@ -110,6 +114,8 @@ int triangle_draw() {
        -0.5f, -0.5f, 0.0f,  // bottom left
        0.5f, -0.5f, 0.0f    // bottom right
    };
+   // 颜色
+   GLfloat vColors[] = {0.0, 1.0, 1.0, 1.0};
    // 顶点的坐标纬数，(x, y, z)坐标纬数为3
    int coords_per_vertex = 3;
    // 计算顶点数目
@@ -128,6 +134,11 @@ int triangle_draw() {
    // Load the vertex data
    glVertexAttribPointer ( mPositionHandle, coords_per_vertex, GL_FLOAT, GL_FALSE, 0, vVertices );
    glEnableVertexAttribArray ( mPositionHandle );
+    
+   // 获取fragment shader的vColor
+   mColorHandle = glGetUniformLocation(programObject, "vColor");
+   // fprintf(stdout, "%s mColorHandle:%d\n", __func__, mColorHandle);
+   glUniform4fv(mColorHandle, 1, vColors);
 
    glDrawArrays ( GL_TRIANGLES, 0, vertexCount );
 }

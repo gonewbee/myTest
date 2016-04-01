@@ -13,7 +13,7 @@ static int g_height;
 // Create a shader object, load the shader source, and
 // compile the shader.
 //
-GLuint LoadShader ( GLenum type, const char *shaderSrc )
+static GLuint LoadShader ( GLenum type, const char *shaderSrc )
 {
    GLuint shader;
    GLint compiled;

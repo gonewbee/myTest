@@ -3,3 +3,4 @@ include_directories(./Common)
 
 add_subdirectory(Common)
 add_subdirectory(Hello_Triangle)
+add_subdirectory(Hello_Polygon)

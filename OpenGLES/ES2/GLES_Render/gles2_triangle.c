@@ -47,6 +47,7 @@ static GLuint LoadShader ( GLenum type, const char *shaderSrc )
 
 int triangle_init() {
     // Vertex shader源码，设置坐标，对应attribute操作
+    // 声明的vPosition在glBindAttribLocation中使用
     GLbyte vShaderStr[] =  
       "attribute vec4 vPosition;    \n"
       "void main()                  \n"
@@ -55,6 +56,7 @@ int triangle_init() {
       "}                            \n";
    
    // Fragment shader源码，设置颜色，对应uniform操作
+   // 声明的vColor在glGetUniformLocation中使用
    GLbyte fShaderStr[] =  
       "precision mediump float; \n"
       "uniform vec4 vColor;     \n"

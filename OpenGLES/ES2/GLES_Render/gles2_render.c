@@ -31,6 +31,7 @@ GLuint LoadShader (GLenum type, const char *shaderSrc) {
     glGetShaderiv ( shader, GL_COMPILE_STATUS, &compiled );
 
     if ( !compiled ) {
+        fprintf(stderr, "%s %d error!\n", __func__, type);
         glDeleteShader ( shader );
         return 0;
     }

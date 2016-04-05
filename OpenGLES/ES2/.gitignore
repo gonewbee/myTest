@@ -6,3 +6,5 @@ cmake_install.cmake
 *.a
 Hello_Triangle
 *.so
+color_triangle
+color_polygon

@@ -6,6 +6,8 @@
 #include <string.h>
 #include "cfuns.h"
 
+static pCallback g_callback;
+
 int add(int a, int b) {
     int c = a + b;
     fprintf(stdout, "%d+%d=%d\n", a, b, c);
@@ -22,8 +24,18 @@ void hello(char *str) {
     fprintf(stdout, "hello %s!\n", str);
 }
 
-void registerStrCallback(int(*callback)(char *)) {
-    char *str = "Hello World!!";
-    int ret = callback(str);
-    fprintf(stdout, "len:%d\n", ret);
+void registerStrCallback(pCallback callback) {
+    g_callback = callback;
+}
+
+void runCallback() {
+    char str[16];
+    int i = 0;
+    int ret;
+    for (i=0; i<100; i+=10) {
+        memset(str, 0, 16);
+        snprintf(str, 16, "callback %d", i);
+        ret = g_callback(str);
+        fprintf(stdout, "%s ret:%d\n", str, ret);
+    }
 }

@@ -24,9 +24,14 @@ def rigister_str_func():
     cfuns.registerStrCallback(CALLBACK(py_str_func))
 
 
+def run_callback():
+    cfuns.runCallback()
+
+
 def py_str_func(s):
-    print("%s len:%d" % (s, len(s)))
+    print(type(s))
     return len(s)
 
 if __name__ == '__main__':
     rigister_str_func()
+    run_callback()

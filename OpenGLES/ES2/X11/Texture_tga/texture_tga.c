@@ -31,8 +31,8 @@ int main ( int argc, char *argv[] )
     esInitContext ( &esContext );
     esContext.userData = &userData;
 
-    int width = 320;
-    int height = 240;
+    int width = 640;
+    int height = 480;
     fprintf(stdout, "width:%d height:%d\n", width, height);
 
     esCreateWindow ( &esContext, "Hello Triangle", width, height, ES_WINDOW_RGB );

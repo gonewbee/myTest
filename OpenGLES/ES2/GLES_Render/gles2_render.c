@@ -67,7 +67,11 @@ GLuint LoadTexture (UserContext *context, char *fileName) {
     int width, height;
     unsigned int imageSize;
     GLubyte *imageData;
+    GLubyte temp;
+    GLuint bytesPerPixel; // 像素点位宽
+    GLuint type = GL_RGBA;
     GLuint texId = 0;
+    GLuint i=0;
     int targetNum, readNum;
 
     f = fopen(fileName, "rb");
@@ -90,7 +94,8 @@ GLuint LoadTexture (UserContext *context, char *fileName) {
 
     width = attributes[1] * 256 + attributes[0];
     height = attributes[3] * 256 + attributes[2];
-    imageSize = attributes[4] / 8 * width * height;
+    bytesPerPixel = attributes[4] / 8;
+    imageSize = bytesPerPixel * width * height;
     imageData = (GLubyte *)malloc(imageSize);
     if (NULL == imageData) {
         fprintf(stderr, strerror(errno));
@@ -103,10 +108,22 @@ GLuint LoadTexture (UserContext *context, char *fileName) {
         goto fail_free;
     }
 
+    fprintf(stdout, "bytesPerPixel:%d bits:%d\n", bytesPerPixel, attributes[4]);
+    // 交换颜色顺序
+    for (i=0; i < imageSize; i+=bytesPerPixel) {
+        temp = imageData[i];
+        imageData[i] = imageData[i+2];
+        imageData[i+2] = temp;
+    }
+
     glGenTextures(1, &texId);
     glBindTexture(GL_TEXTURE_2D, texId);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+    if (3 == bytesPerPixel) {
+        type = GL_RGB;
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, type, width, height, 0, type, GL_UNSIGNED_BYTE, imageData);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

@@ -10,6 +10,8 @@ typedef int (*pCallback)(char *);
 int add(int a, int b);
 int getLen(char *str);
 void hello(char *str);
+int cstrargs(int n, char *str, ...);
+int arrtest(int n, char *p[]);
 
 //void registerStrCallback(int(*callback)(char *));
 void registerStrCallback(pCallback callback);

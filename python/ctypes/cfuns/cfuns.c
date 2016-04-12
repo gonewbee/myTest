@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include "cfuns.h"
 
 static pCallback g_callback;
@@ -22,6 +23,36 @@ int getLen(char *str) {
 
 void hello(char *str) {
     fprintf(stdout, "hello %s!\n", str);
+}
+
+int cstrargs(int n, char *str, ...) {
+    va_list argptr;
+    int num = 0;
+    va_start(argptr, str);
+    char *t = str;
+    num += 1;
+    fprintf(stdout, "n:%d\n", n);
+    fprintf(stdout, "%s\n", t);
+//    while ((t=va_arg(argptr, char*)) != 0) {
+//        fprintf(stdout, "%s\n", t);
+//        num += 1;
+//    }
+    while (num < n) {
+        t = va_arg(argptr, char *);
+        fprintf(stdout, "%s\n", t);
+        num += 1;
+    }
+    va_end(argptr);
+    return num;
+}
+
+int arrtest(int n, char *p[]) {
+    int i;
+    for (i=0; i<n; i++) {
+        fprintf(stdout, "%s\n", p[i]);
+        sprintf(p[i], "re%d", i);
+    }
+    return 0;
 }
 
 void registerStrCallback(pCallback callback) {

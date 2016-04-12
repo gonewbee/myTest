@@ -21,16 +21,19 @@ void *thread_func(void *arg) {
     char buf[BUF_LEN] = {0};
     TEST_PIPE *fd = (TEST_PIPE *)arg;
     fprintf(stdout, "id is:%d\n", fd->id);
-    ret = read(fd->pipe_fd[0], buf, BUF_LEN);
-    fprintf(stdout, "%lu read:%d %s\n", pthread_self(), ret, buf);
+    while ((ret = read(fd->pipe_fd[0], buf, BUF_LEN))>0) {
+        fprintf(stdout, "%lu read:%d %s\n", pthread_self(), ret, buf);
+        memset(buf, 0, BUF_LEN);
+    }
+    fprintf(stdout, "%lu ret:%d\n", pthread_self(), ret);
     return NULL;
 }
 
 int main(int argc, char *argv) {
     pthread_t t_id;
-    int ret;
+    int ret, i;
     void *status;
-    char *str = "Hello World!!!";
+    char str[] = "Hello World!!!";
     TEST_PIPE fds;
     fds.id = 123;
     if (pipe(fds.pipe_fd)<0) {
@@ -42,9 +45,13 @@ int main(int argc, char *argv) {
         fprintf(stderr, "pthread_create error::%d\n", ret);
         return -1;
     }
-    write(fds.pipe_fd[1], str, strlen(str));
-    pthread_join(t_id, &status);
+    fprintf(stdout, "main try to write!\n");
+    for (i=0; i<6; i++) {
+        write(fds.pipe_fd[1], str, i);
+        sleep(1);
+    }
     close(fds.pipe_fd[0]);
     close(fds.pipe_fd[1]);
+    pthread_join(t_id, &status);
     return 0;
 }

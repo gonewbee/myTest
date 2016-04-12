@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include "cfuns.h"
 
 static pCallback g_callback;
@@ -69,4 +70,17 @@ void runCallback() {
         ret = g_callback(str);
         fprintf(stdout, "%s ret:%d\n", str, ret);
     }
+}
+
+const char *str_return() {
+    char *s = "This is string in c";
+#if 0
+    char *t = malloc(100);
+    int len = strlen(s);
+    memcpy(t, s, len);
+    t[len] = '\0';
+    return t;
+#else
+    return s;
+#endif
 }

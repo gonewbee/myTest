@@ -1,5 +1,5 @@
 import os
-from ctypes import CDLL, CFUNCTYPE, c_char_p, c_int
+from ctypes import CDLL, CFUNCTYPE, c_char_p, c_int, string_at
 
 clib_path = os.path.dirname(os.path.abspath(__file__))
 clib_path = os.path.dirname(clib_path)
@@ -47,6 +47,12 @@ def arrtest():
         print(t)
 
 
+def cgetstr():
+    cfuns.str_return.restype = c_char_p
+    s = cfuns.str_return()
+    print(s)
+
+
 def py_str_func(s):
     print(type(s))
     return len(s)
@@ -56,3 +62,4 @@ if __name__ == '__main__':
     # run_callback()
     cstrargs('abc', '123', 'defghi', 'jihg')
     arrtest()
+    cgetstr()

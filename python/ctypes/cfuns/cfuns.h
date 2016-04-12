@@ -17,4 +17,6 @@ int arrtest(int n, char *p[]);
 void registerStrCallback(pCallback callback);
 void runCallback();
 
+const char *str_return();
+
 #endif //CTYPES_CFUNS_H

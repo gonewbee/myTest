@@ -1,0 +1,3 @@
+add_executable(out_openwindow open_a_window.c)
+target_link_libraries(out_openwindow GLESv2)
+target_link_libraries(out_openwindow glut)

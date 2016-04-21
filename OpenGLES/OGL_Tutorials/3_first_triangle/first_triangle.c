@@ -1,7 +1,6 @@
 /**
- * @brief 使用OpenGL ES 2.0绘制一个点
+ * @brief 使用OpenGL ES 2.0绘制一个三角形
  * 
- * OpenGL不提供创建和管理窗口的接口，选择使用GLUT来显示窗口
  * @author  zhangshy
  */
 #include <stdio.h>
@@ -33,15 +32,18 @@ static void RenderSceneCB() {
     // 0：幅度，buffer中两个属性实例间隔的字节数
     // 0：偏移量
     glVertexAttribPointer(attribute_index, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_POINTS, 0, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisableVertexAttribArray(attribute_index);
 
     glutSwapBuffers();
 }
 
 static void create_vertex_buffer() {
-    // 显示在屏幕中央
-    GLfloat vVertices[] = {0.0f, 0.0f, 0.0f};
+    // 三角形的三个点
+    GLfloat vVertices[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f};
     // OpenGL定义数个glGen*函数来生成不同类型的对象
     // 大部分需要两个参数
     // 第一个参数：要创建的对象的数目

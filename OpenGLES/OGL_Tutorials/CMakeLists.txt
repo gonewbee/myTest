@@ -5,3 +5,4 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 add_subdirectory(1_open_a_window)
 add_subdirectory(2_hello_dot)
+add_subdirectory(3_first_triangle)

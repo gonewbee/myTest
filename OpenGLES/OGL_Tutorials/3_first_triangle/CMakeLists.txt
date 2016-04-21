@@ -1,0 +1,3 @@
+add_executable(out_first_triangle first_triangle)
+target_link_libraries(out_first_triangle GLESv2)
+target_link_libraries(out_first_triangle glut)

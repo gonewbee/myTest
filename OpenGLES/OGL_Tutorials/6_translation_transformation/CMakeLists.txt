@@ -1,0 +1,5 @@
+add_executable(out_translation_transformation translation_transformation_out.c translation_transformation.c)
+target_link_libraries(out_translation_transformation GLESv2)
+target_link_libraries(out_translation_transformation glut)
+# 使用math.h
+target_link_libraries(out_translation_transformation m)

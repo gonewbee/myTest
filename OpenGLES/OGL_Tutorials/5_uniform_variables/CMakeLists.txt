@@ -1,0 +1,5 @@
+add_executable(out_uniform_variable uniform_variables_out.c uniform_variables.c)
+target_link_libraries(out_uniform_variable GLESv2)
+target_link_libraries(out_uniform_variable glut)
+# 使用math.h
+target_link_libraries(out_uniform_variable m)

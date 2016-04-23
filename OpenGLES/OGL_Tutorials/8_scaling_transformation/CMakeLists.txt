@@ -1,0 +1,5 @@
+add_executable(out_scaling_transformation scaling_transformation_out.c scaling_transformation.c)
+target_link_libraries(out_scaling_transformation GLESv2)
+target_link_libraries(out_scaling_transformation glut)
+# 使用math.h
+target_link_libraries(out_scaling_transformation m)

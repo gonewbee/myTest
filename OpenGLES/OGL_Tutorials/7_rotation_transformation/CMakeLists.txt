@@ -1,0 +1,5 @@
+add_executable(out_rotation_transformation rotation_transformation_out.c rotation_transformation.c)
+target_link_libraries(out_rotation_transformation GLESv2)
+target_link_libraries(out_rotation_transformation glut)
+# 使用math.h
+target_link_libraries(out_rotation_transformation m)

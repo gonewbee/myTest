@@ -11,3 +11,5 @@ add_subdirectory(5_uniform_variables)
 add_subdirectory(6_translation_transformation)
 add_subdirectory(7_rotation_transformation)
 add_subdirectory(8_scaling_transformation)
+add_subdirectory(9_interpolation)
+

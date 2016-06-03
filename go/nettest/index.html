@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<form action="req" method="post" id="host_form">
+		中心地址: <input type="text" name="host_ip"><br />
+		代理地址: <input type="text" name="agent_ip"><br />
+		<input type="submit" value="确定"/>
+	</form>
+	<script type="text/javascript">
+		document.getElementById("host_form").onsubmit = function(e) {
+
+			e.preventDefault();
+			
+			var f = e.target;
+			formData = new FormData(f);
+			var xhr = new XMLHttpRequest();
+			
+			xhr.open("POST", f.action);
+			xhr.send(formData);
+		}
+	</script>
+</body>
+</html>

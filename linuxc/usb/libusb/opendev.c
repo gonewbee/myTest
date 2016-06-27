@@ -3,8 +3,9 @@
 
 static void zs_callback(struct libusb_transfer *xfer) {
     int *completed = xfer->user_data;
-    fprintf(stdout, "status:%d actual_length:%d\n", xfer->status, xfer->actual_length);
     int i;
+    fprintf(stdout, "status:%d actual_length:%d buffer addr:%p user_data:%p\n", 
+        xfer->status, xfer->actual_length, xfer->buffer, xfer->user_data);
     fprintf(stdout, "host->device:");
     for (i=0; i<8; i++) {
         fprintf(stdout, "%x ", xfer->buffer[i]);
@@ -64,6 +65,7 @@ static void usb_host_control_test(libusb_device_handle *dh) {
     struct libusb_transfer *xfer = libusb_alloc_transfer(0);
     // buffer的长度为输出和输入总长度和
     uint8_t buffer[8+0x12] = {0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x12, 0x00};
+    fprintf(stdout, "%s buffer addr:%p user_data addr:%p\n", __func__, buffer, &completed);
     libusb_fill_control_transfer(xfer, dh, buffer, zs_callback, &completed, 1000);
     libusb_submit_transfer(xfer);
     
@@ -95,7 +97,7 @@ int main(int argc, char *argv[]) {
 
     usb_host_detach_kernel(device, dh);
 
-    sleep(2);
+    sleep(1);
     usb_host_control_test(dh);
 
     usb_host_attach_kernel(device, dh);

@@ -2,16 +2,27 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
+#define TESTFS_MAGIC 0x12344321
+
+static int testfs_fill_super(struct super_block *sb, void *data, int silent)
+{
+    static struct tree_descr debug_files[] = {{""}};
+    pr_debug("testfs fill_super\n");
+    simple_fill_super(sb, TESTFS_MAGIC, debug_files);
+    return 0;
+}
+
 static struct dentry *testfs_mount(struct file_system_type *fs_type,
     int flags, const char *dev_name, void *data)
 {
     pr_debug("testfs mount\n");
-    return NULL;
+    return mount_nodev(fs_type, flags, data, testfs_fill_super);
 }
 
 static void testfs_kill_sb(struct super_block *sb)
 {
     pr_debug("testfs kill sb\n");
+    kill_litter_super(sb);
 }
 
 static struct file_system_type testfs_type = {
@@ -20,7 +31,7 @@ static struct file_system_type testfs_type = {
     .mount = testfs_mount,
     /* 查看/proc/filesystems内容为"nodev   testfs" */
     .kill_sb = testfs_kill_sb,
-    .fs_flags = FS_USERNS_VISIBLE | FS_USERNS_MOUNT,
+    .fs_flags = FS_USERNS_MOUNT,
 
     /* 查看/proc/filesystems内容为"        testfs" */
     // .kill_sb = kill_block_super,

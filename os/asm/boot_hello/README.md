@@ -1,3 +1,5 @@
+参考[Writing Hello World Bootloader](http://viralpatel.net/taj/tutorial/hello_world_bootloader.php)
+
 ### 1. 编译
 ```
 $ nasm fooboot.asm -f bin -o boot.bin

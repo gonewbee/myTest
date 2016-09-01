@@ -32,3 +32,4 @@ Once all the registers all filled with appropriate value, we can call interrupt.
 参考
 + [INT 10H](https://en.wikipedia.org/wiki/INT_10H)，不同AH值对应的不同功能
 + [BIOS color attributes](https://en.wikipedia.org/wiki/BIOS_color_attributes)，BIOS的BL对应的颜色
++ [BIOS interrupt call](https://en.wikipedia.org/wiki/BIOS_interrupt_call)

@@ -40,3 +40,34 @@ Once all the registers all filled with appropriate value, we can call interrupt.
 + [x86 assembly directly write to VGA simple OS](http://stackoverflow.com/questions/18550598/x86-assembly-directly-write-to-vga-simple-os)
 + [hurlex <四> 字符模式下的显卡驱动](http://wiki.0xffffff.org/posts/hurlex-4.html)
 
+### 7. 使用qemu的gdb和monitor功能进行调试
+参考[How to step over interrupt calls when debugging a bootloader/bios with gdb and QEMU?](http://stackoverflow.com/questions/24491516/how-to-step-over-interrupt-calls-when-debugging-a-bootloader-bios-with-gdb-and-q)
+
+#### 启动qemu
+```
+$ qemu-system-x86_64 -monitor stdio -s -S -m 16 -boot c -hda ./vramboot_helloworld.bin
+```
++ -monitor stdio: qemu的monitor功能，可使用info registers和x /i $eip命令
++ -s: 会启动gdbserver功能，端口1234
+
+#### gdb
+启动gdb，连接localhost:1234端口
+```
+$ gdb
+(gdb) target remote localhost:1234
+(gdb) set architecture i8086
+(gdb) br *0x7c00
+Breakpoint 1 at 0x7c00
+(gdb) c
+Continuing.
+
+Breakpoint 1, 0x00007c00 in ?? ()
+(gdb) si
+0x00007c03 in ?? ()
+```
++ si是stepi的简写，单步跟踪一条机器指令
+
+#### qemu monitor查看
++ x /i $eip: 显示指令
++ info registers: 查看各个寄存器状态
+
